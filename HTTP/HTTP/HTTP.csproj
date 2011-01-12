@@ -38,7 +38,6 @@
     <Compile Include="Request.cs" />
     <Compile Include="Tests\TestRequest.cs" />
     <Compile Include="Response.cs" />
-    <Compile Include="RequestBase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

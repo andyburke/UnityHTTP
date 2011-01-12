@@ -34,8 +34,9 @@ namespace HTTP
 			return headers[name][headers[name].Count-1];
 		}
 		
-		public Response (BinaryReader stream)
+		public Response (Stream stream)
 		{
+			
 			ReadFromStream(stream);
 		}
 		
@@ -44,10 +45,12 @@ namespace HTTP
 			var line = new List<byte> ();
 			while (true) {
 				byte c = stream.ReadByte ();
-				if (c == Request.EOL[0] && line[line.Count - 1] == Request.EOL[1]) break;
+				if (c == Request.EOL[1]) break;
 				line.Add (c);
 			}
-			return ASCIIEncoding.ASCII.GetString (line.ToArray ()).Trim ();
+			var s = ASCIIEncoding.ASCII.GetString (line.ToArray ()).Trim ();
+			Console.WriteLine(s);
+			return s;
 		}
 
 		string[] ReadKeyValue (BinaryReader stream)
@@ -56,20 +59,31 @@ namespace HTTP
 			if (line == "")
 				return null;
 			else {
-				var parts = line.Split (new char[] { ':' });
-				if(parts.Length != 2) throw new HTTPException("Invalid Headers");
+				var split = line.IndexOf(':');
+				if(split == -1) return null;
+				var parts = new string[2];
+				parts[0] = line.Substring(0,split).Trim();
+				parts[1] = line.Substring(split+1).Trim();
 				return parts;
 			}
 			
 		}
 				
-		void ReadFromStream (BinaryReader stream)
+		void ReadFromStream (Stream inputStream)
 		{
+			
+			var stream = new BinaryReader(inputStream);
 			var top = ReadLine (stream).Split(new char[] {' '});
-			if(!int.TryParse(top[0], out status))
+			
+			if(!int.TryParse(top[1], out status))
 				throw new HTTPException("Bad Status Code");
-			message = string.Join(" ", top, 1, top.Length-2);
+			
+			message = string.Join(" ", top, 2, top.Length-2);
 			headers.Clear ();
+			Console.WriteLine(status);
+			Console.WriteLine(message);
+			
+			
 			while (true) {
 				// Collect Headers
 				string[] parts = ReadKeyValue (stream);
@@ -97,9 +111,11 @@ namespace HTTP
 			} else {
 				// Read Body
 				int contentLength = 0;
+				
 				try {
 					contentLength = int.Parse(GetHeader("content-length"));
-				} catch(FormatException) {
+					Console.WriteLine(contentLength);
+				} catch {
 					throw new HTTPException("Bad Content Length.");	
 				}
 				bytes = stream.ReadBytes (contentLength);

@@ -50,13 +50,11 @@ namespace HTTP
 			isDone = false;
 			var client = new TcpClient();
 			client.BeginConnect(uri.Host, uri.Port, delegate(IAsyncResult result) {
+				client.EndConnect(result);
 				Console.WriteLine("Connected.");
 				using(var stream = client.GetStream()) {
-					var writer = new BinaryWriter(stream);
-					var reader = new BinaryReader(stream);
-					WriteToStream(writer);
-					
-					response = new Response(reader);
+					WriteToStream(stream);
+					response = new Response(stream);
 				}
 				client.Close();
 				isDone = true;
@@ -65,8 +63,10 @@ namespace HTTP
 		}
 		
 		
-		void WriteToStream (BinaryWriter stream)
+		void WriteToStream (Stream outputStream)
 		{
+			var stream = new BinaryWriter(outputStream);
+			
 			stream.Write (ASCIIEncoding.ASCII.GetBytes (method.ToUpper() + " " + uri.PathAndQuery + " " + protocol));
 			stream.Write (EOL);
 			foreach (string name in headers.Keys) {

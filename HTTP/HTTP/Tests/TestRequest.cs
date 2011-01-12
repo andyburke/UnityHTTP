@@ -1,5 +1,7 @@
 using System;
 using NUnit.Framework;
+using System.Threading;
+
 namespace HTTP
 {
 	[TestFixture()]
@@ -10,8 +12,8 @@ namespace HTTP
 		{
 			var r = new Request("get", "http://www.google.com/");
 			r.Send();
-			while(!r.isDone);
-			Console.WriteLine(r.bytes.Length.ToString());
+			while(!r.isDone) Thread.Sleep(100);
+			Console.WriteLine(r.response.bytes.Length.ToString());
 		}
 	}
 }
