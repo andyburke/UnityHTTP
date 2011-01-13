@@ -13,7 +13,7 @@ namespace HTTP
 			var r = new Request("get", "http://www.google.com/");
 			r.Send();
 			while(!r.isDone) Thread.Sleep(100);
-			Console.WriteLine(r.response.bytes.Length.ToString());
+			Console.WriteLine(r.response.status);
 		}
 	}
 }

@@ -49,7 +49,6 @@ namespace HTTP
 				line.Add (c);
 			}
 			var s = ASCIIEncoding.ASCII.GetString (line.ToArray ()).Trim ();
-			Console.WriteLine(s);
 			return s;
 		}
 
@@ -80,8 +79,6 @@ namespace HTTP
 			
 			message = string.Join(" ", top, 2, top.Length-2);
 			headers.Clear ();
-			Console.WriteLine(status);
-			Console.WriteLine(message);
 			
 			
 			while (true) {
@@ -114,7 +111,6 @@ namespace HTTP
 				
 				try {
 					contentLength = int.Parse(GetHeader("content-length"));
-					Console.WriteLine(contentLength);
 				} catch {
 					throw new HTTPException("Bad Content Length.");	
 				}

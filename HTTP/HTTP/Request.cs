@@ -46,12 +46,10 @@ namespace HTTP
 		}
 		
 		public void Send() {
-			Console.WriteLine(uri.Port);
 			isDone = false;
 			var client = new TcpClient();
 			client.BeginConnect(uri.Host, uri.Port, delegate(IAsyncResult result) {
 				client.EndConnect(result);
-				Console.WriteLine("Connected.");
 				using(var stream = client.GetStream()) {
 					WriteToStream(stream);
 					response = new Response(stream);
@@ -61,7 +59,6 @@ namespace HTTP
 				
 			}, null);
 		}
-		
 		
 		void WriteToStream (Stream outputStream)
 		{
