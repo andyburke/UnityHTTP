@@ -1,17 +1,16 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
   <MonoDevelop.Ide.Workbench ActiveDocument="HTTP/Response.cs">
     <Files>
-      <File FileName="HTTP/Request.cs" Line="41" Column="53" />
-      <File FileName="HTTP/Tests/TestRequest.cs" Line="16" Column="41" />
-      <File FileName="HTTP/Response.cs" Line="90" Column="4" />
+      <File FileName="HTTP/Request.cs" Line="55" Column="3" />
+      <File FileName="HTTP/Tests/TestRequest.cs" Line="17" Column="39" />
+      <File FileName="HTTP/Response.cs" Line="41" Column="48" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True">
+        <State expanded="True" selected="True">
           <Node name="HTTP" expanded="True">
             <Node name="Tests" expanded="True" />
-            <Node name="Response.cs" selected="True" />
           </Node>
         </State>
       </Pad>
@@ -21,11 +20,11 @@
       <Pad Id="MonoDevelop.Debugger.WatchPad">
         <State />
       </Pad>
-      <Pad Id="ConnectionManagerPad">
-        <State selected="True" />
-      </Pad>
       <Pad Id="MonoDevelop.NUnit.TestPad">
         <State expanded="True" selected="True" />
+      </Pad>
+      <Pad Id="ConnectionManagerPad">
+        <State selected="True" />
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>

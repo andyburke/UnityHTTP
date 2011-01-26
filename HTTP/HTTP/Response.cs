@@ -22,6 +22,12 @@ namespace HTTP
 			}
 		}
 		
+		public string Asset {
+			get {
+				throw new NotSupportedException("This can't be done, yet.");
+			}
+		}
+		
 		void AddHeader(string name, string value) {
 			name = name.ToLower().Trim();
 			value = value.Trim();
@@ -76,7 +82,6 @@ namespace HTTP
 				
 		void ReadFromStream (Stream inputStream)
 		{
-			
 			var stream = new BinaryReader(inputStream);
 			var top = ReadLine (stream).Split(new char[] {' '});
 			
