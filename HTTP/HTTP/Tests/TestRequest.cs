@@ -14,6 +14,7 @@ namespace HTTP
 			r.Send();
 			while(!r.isDone) Thread.Sleep(100);
 			Console.WriteLine(r.response.status);
+			Console.WriteLine(r.response.Text);
 		}
 	}
 }

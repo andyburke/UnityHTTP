@@ -15,6 +15,13 @@ namespace HTTP
 		
 		Dictionary<string, List<string>> headers = new Dictionary<string, List<string>>();
 		
+		public string Text {
+			get {
+				if(bytes == null) return "";
+				return System.Text.UTF8Encoding.UTF8.GetString(bytes);	
+			}
+		}
+		
 		void AddHeader(string name, string value) {
 			name = name.ToLower().Trim();
 			value = value.Trim();
@@ -36,7 +43,6 @@ namespace HTTP
 		
 		public Response (Stream stream)
 		{
-			
 			ReadFromStream(stream);
 		}
 		
@@ -80,7 +86,6 @@ namespace HTTP
 			message = string.Join(" ", top, 2, top.Length-2);
 			headers.Clear ();
 			
-			
 			while (true) {
 				// Collect Headers
 				string[] parts = ReadKeyValue (stream);
@@ -93,6 +98,8 @@ namespace HTTP
 				while (true) {
 					// Collect Body
 					string hexLength = ReadLine (stream);
+					//Console.WriteLine("HexLength:" + hexLength);
+					if(hexLength.Length == 0) break;
 					int length = int.Parse (hexLength, NumberStyles.AllowHexSpecifier);
 					if (length == 0) break;
 					receivedBytes.AddRange (stream.ReadBytes (length));

@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Globalization;
+using System.Threading;
 
 
 namespace HTTP
@@ -12,8 +13,6 @@ namespace HTTP
 		public HTTPException(string message) : base(message) {
 		}
 	}
-	
-	
 	
 	public class Request
 	{
@@ -24,6 +23,7 @@ namespace HTTP
 		public static byte[] EOL = { (byte)'\r', (byte)'\n' };
 		public Response response = null;
 		public bool isDone = false;
+		public int maximumRetryCount = 8;
 		
 		Dictionary<string, List<string>> headers = new Dictionary<string, List<string>>();
 		
@@ -45,25 +45,49 @@ namespace HTTP
 			headers[name].Add(value);
 		}
 		
+		public void SetHeader(string name, string value) {
+			name = name.ToLower().Trim();
+			value = value.Trim();
+			if(!headers.ContainsKey(name)) headers[name] = new List<string>();
+			headers[name].Clear();
+			headers[name].Add(value);
+		}
+		
 		public void Send() {
 			isDone = false;
-			var client = new TcpClient();
-			client.BeginConnect(uri.Host, uri.Port, delegate(IAsyncResult result) {
-				client.EndConnect(result);
-				using(var stream = client.GetStream()) {
-					WriteToStream(stream);
-					response = new Response(stream);
+			ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(Object state) {
+				try {
+					var retry = 0;
+					while(++retry < maximumRetryCount) {
+						SetHeader("Host", uri.Host);
+						var client = new TcpClient();
+						client.Connect(uri.Host, uri.Port);
+						using(var stream = client.GetStream()) {
+							WriteToStream(stream);
+							response = new Response(stream);
+						}
+						client.Close();
+						switch(response.status) {
+						case 307:
+						case 302:
+							uri = new Uri(response.GetHeader("Location"));
+							continue;
+						default:
+							retry = maximumRetryCount;
+							break;
+						}
+					}
+				} catch(Exception e) {
+					Console.WriteLine("Unhandled Exception, aborting request.");
+					Console.WriteLine(e);	
 				}
-				client.Close();
 				isDone = true;
-				
-			}, null);
+			}));
 		}
 		
 		void WriteToStream (Stream outputStream)
 		{
 			var stream = new BinaryWriter(outputStream);
-			
 			stream.Write (ASCIIEncoding.ASCII.GetBytes (method.ToUpper() + " " + uri.PathAndQuery + " " + protocol));
 			stream.Write (EOL);
 			foreach (string name in headers.Keys) {
