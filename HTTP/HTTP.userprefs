@@ -4,13 +4,14 @@
     <Files>
       <File FileName="HTTP/Request.cs" Line="55" Column="3" />
       <File FileName="HTTP/Tests/TestRequest.cs" Line="17" Column="39" />
-      <File FileName="HTTP/Response.cs" Line="41" Column="48" />
+      <File FileName="HTTP/Response.cs" Line="29" Column="4" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True" selected="True">
+        <State expanded="True">
           <Node name="HTTP" expanded="True">
             <Node name="Tests" expanded="True" />
+            <Node name="Response.cs" selected="True" />
           </Node>
         </State>
       </Pad>

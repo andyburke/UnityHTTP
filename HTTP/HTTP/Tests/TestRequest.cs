@@ -15,6 +15,12 @@ namespace HTTP
 			while(!r.isDone) Thread.Sleep(100);
 			Console.WriteLine(r.response.status);
 			Console.WriteLine(r.response.Text);
+			
+			r = new Request("get", "http://www.digitalcoding.com/tools/test-gzip-deflate-compression.html");
+			r.Send();
+			while(!r.isDone) Thread.Sleep(100);
+			Console.WriteLine(r.response.status);
+			Console.WriteLine(r.response.Text);
 		}
 	}
 }

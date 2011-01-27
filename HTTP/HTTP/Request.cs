@@ -24,6 +24,7 @@ namespace HTTP
 		public Response response = null;
 		public bool isDone = false;
 		public int maximumRetryCount = 8;
+		public bool acceptGzip = true;
 		
 		Dictionary<string, List<string>> headers = new Dictionary<string, List<string>>();
 		
@@ -55,6 +56,7 @@ namespace HTTP
 		
 		public void Send() {
 			isDone = false;
+			if(acceptGzip) SetHeader("Accept-Encoding", "gzip, deflate");
 			ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(Object state) {
 				try {
 					var retry = 0;
@@ -70,6 +72,7 @@ namespace HTTP
 						switch(response.status) {
 						case 307:
 						case 302:
+						case 301:
 							uri = new Uri(response.GetHeader("Location"));
 							continue;
 						default:
