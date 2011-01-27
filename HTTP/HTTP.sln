@@ -27,5 +27,6 @@ Global
 		$3.MessageStyle = $4
 		$4.LineAlign = 0
 		$3.inheritsSet = Mono
+		version = 0.2
 	EndGlobalSection
 EndGlobal

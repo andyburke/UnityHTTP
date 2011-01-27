@@ -1,17 +1,19 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="HTTP/Response.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="HTTP/Tests/TestRequest.cs">
     <Files>
-      <File FileName="HTTP/Request.cs" Line="55" Column="3" />
-      <File FileName="HTTP/Tests/TestRequest.cs" Line="17" Column="39" />
-      <File FileName="HTTP/Response.cs" Line="29" Column="4" />
+      <File FileName="HTTP/Request.cs" Line="59" Column="62" />
+      <File FileName="HTTP/Tests/TestRequest.cs" Line="19" Column="97" />
+      <File FileName="HTTP/Response.cs" Line="157" Column="27" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="HTTP" expanded="True">
-            <Node name="Tests" expanded="True" />
-            <Node name="Response.cs" selected="True" />
+            <Node name="References" expanded="True" />
+            <Node name="Tests" expanded="True">
+              <Node name="TestRequest.cs" selected="True" />
+            </Node>
           </Node>
         </State>
       </Pad>
