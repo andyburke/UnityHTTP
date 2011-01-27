@@ -115,12 +115,15 @@ namespace HTTP
 				while (true) {
 					// Collect Body
 					string hexLength = ReadLine (inputStream);
-					//Console.WriteLine("HexLength:" + hexLength);
-					if (hexLength.Length == 0)
+					Console.WriteLine("HexLength:" + hexLength);
+					if (hexLength == "0")
 						break;
 					int length = int.Parse (hexLength, NumberStyles.AllowHexSpecifier);
 					for (int i = 0; i < length; i++)
 						output.WriteByte ((byte)inputStream.ReadByte ());
+					//forget the CRLF.
+					inputStream.ReadByte();
+					inputStream.ReadByte();
 				}
 				
 				while (true) {
@@ -138,7 +141,7 @@ namespace HTTP
 				try {
 					contentLength = int.Parse (GetHeader ("content-length"));
 				} catch {
-					throw new HTTPException ("Bad Content Length.");
+					contentLength = 0;
 				}
 				for (int i = 0; i < contentLength; i++)
 					output.WriteByte ((byte)inputStream.ReadByte ());
@@ -158,6 +161,7 @@ namespace HTTP
 			} else {
 				bytes = output.ToArray ();
 			}
+			
 			
 		}
 		

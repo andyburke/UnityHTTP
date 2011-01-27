@@ -3,7 +3,7 @@
   <MonoDevelop.Ide.Workbench ActiveDocument="HTTP/Tests/TestRequest.cs">
     <Files>
       <File FileName="HTTP/Request.cs" Line="59" Column="62" />
-      <File FileName="HTTP/Tests/TestRequest.cs" Line="19" Column="97" />
+      <File FileName="HTTP/Tests/TestRequest.cs" Line="28" Column="1" />
       <File FileName="HTTP/Response.cs" Line="157" Column="27" />
     </Files>
     <Pads>

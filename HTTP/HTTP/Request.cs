@@ -25,12 +25,20 @@ namespace HTTP
 		public bool isDone = false;
 		public int maximumRetryCount = 8;
 		public bool acceptGzip = true;
+		public bool useCache = false;
 		
 		Dictionary<string, List<string>> headers = new Dictionary<string, List<string>>();
+		static Dictionary<string, string> etags = new Dictionary<string, string>();
 		
 		public Request(string method, string uri) {
 			this.method = method;
 			this.uri = new Uri(uri);
+		}
+		
+		public Request(string method, string uri, bool useCache) {
+			this.method = method;
+			this.uri = new Uri(uri);
+			this.useCache = useCache;
 		}
 		
 		public Request(string method, string uri, byte[] bytes) {
@@ -56,11 +64,17 @@ namespace HTTP
 		
 		public void Send() {
 			isDone = false;
-			if(acceptGzip) SetHeader("Accept-Encoding", "gzip, deflate");
+			if(acceptGzip) SetHeader("Accept-Encoding", "gzip");
 			ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(Object state) {
 				try {
 					var retry = 0;
 					while(++retry < maximumRetryCount) {
+						if(useCache) {
+							string etag = "";
+							if(etags.TryGetValue(uri.AbsoluteUri, out etag)) {
+								SetHeader("if-none-match", etag);
+							}
+						}
 						SetHeader("Host", uri.Host);
 						var client = new TcpClient();
 						client.Connect(uri.Host, uri.Port);
@@ -80,6 +94,11 @@ namespace HTTP
 							break;
 						}
 					}
+					if(useCache) {
+						string etag = response.GetHeader("etag");
+						if(etag.Length > 0) etags[uri.AbsoluteUri] = etag;
+					}
+					
 				} catch(Exception e) {
 					Console.WriteLine("Unhandled Exception, aborting request.");
 					Console.WriteLine(e);	
