@@ -26,6 +26,7 @@ namespace HTTP
 		public int maximumRetryCount = 8;
 		public bool acceptGzip = true;
 		public bool useCache = false;
+		public Exception exception = null;
 		
 		Dictionary<string, List<string>> headers = new Dictionary<string, List<string>>();
 		static Dictionary<string, string> etags = new Dictionary<string, string>();
@@ -101,7 +102,9 @@ namespace HTTP
 					
 				} catch(Exception e) {
 					Console.WriteLine("Unhandled Exception, aborting request.");
-					Console.WriteLine(e);	
+					Console.WriteLine(e);
+					exception = e;
+					response = null;
 				}
 				isDone = true;
 			}));

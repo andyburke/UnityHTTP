@@ -115,7 +115,7 @@ namespace HTTP
 				while (true) {
 					// Collect Body
 					string hexLength = ReadLine (inputStream);
-					Console.WriteLine("HexLength:" + hexLength);
+					//Console.WriteLine("HexLength:" + hexLength);
 					if (hexLength == "0")
 						break;
 					int length = int.Parse (hexLength, NumberStyles.AllowHexSpecifier);
