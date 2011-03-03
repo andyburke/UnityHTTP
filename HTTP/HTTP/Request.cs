@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 using System.IO;
 using System.Text;
@@ -5,6 +6,11 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Globalization;
 using System.Threading;
+using System.Net.Security;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+
+
 
 
 namespace HTTP
@@ -93,7 +99,7 @@ namespace HTTP
 			isDone = false;
 			if (acceptGzip)
 				SetHeader ("Accept-Encoding", "gzip");
-			ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(Object state) {
+			ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(object state) {
 				try {
 					var retry = 0;
 					while (++retry < maximumRetryCount) {
@@ -107,8 +113,19 @@ namespace HTTP
 						var client = new TcpClient ();
 						client.Connect (uri.Host, uri.Port);
 						using (var stream = client.GetStream ()) {
-							WriteToStream (stream);
-							response = new Response (stream);
+							var ostream = stream as Stream;
+							if (uri.Scheme.ToLower() == "https") {
+								ostream = new SslStream (stream, false, new RemoteCertificateValidationCallback (ValidateServerCertificate));
+								try {
+									var ssl = ostream as SslStream;
+									ssl.AuthenticateAsClient (uri.Host);
+								} catch (AuthenticationException e) {
+									Debug.LogError ("Auth Exception: " + e.Message);
+									return;
+								}
+							}
+							WriteToStream (ostream);
+							response = new Response (ostream);
 						}
 						client.Close ();
 						switch (response.status) {
@@ -140,6 +157,13 @@ namespace HTTP
 
 		public string Text {
 			set { bytes = System.Text.Encoding.UTF8.GetBytes (value); }
+		}
+
+
+		public static bool ValidateServerCertificate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+		{
+			Debug.LogWarning ("SSL Cert Error:" + sslPolicyErrors.ToString ());
+			return true;
 		}
 
 		void WriteToStream (Stream outputStream)

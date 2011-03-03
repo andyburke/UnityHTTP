@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.IO;
 using System;
+using HTTP;
 
 namespace HTTP
 {
@@ -53,24 +54,32 @@ namespace HTTP
 
 		IEnumerator DownloadAndSave (Request request, string filename, DiskCacheOperation handle)
 		{
+			var useCachedVersion = File.Exists(filename);
 			request.Send ();
 			while (!request.isDone)
 				yield return new WaitForEndOfFrame ();
 			if (request.exception == null && request.response != null) {
-				if (request.response.status == 304) {
-					request.response.bytes = File.ReadAllBytes (filename);
-					handle.fromCache = true;
-				} else if (request.response.status == 200) {
+				if (request.response.status == 200) {
 					var etag = request.response.GetHeader ("etag");
 					if (etag != "") {
 						File.WriteAllBytes (filename, request.response.bytes);
 						File.WriteAllText (filename + ".etag", etag);
 					}
+					useCachedVersion = false;
 				}
+			}
+			
+			if(useCachedVersion) {
+				if(request.exception != null) {
+					Debug.LogWarning("Using cached version due to exception:" + request.exception);
+					request.exception = null;
+				}
+				request.response.status = 304;
+				request.response.bytes = File.ReadAllBytes (filename);
+				request.isDone = true;
 			}
 			handle.isDone = true;
 		}
 		
 	}
-	
 }
