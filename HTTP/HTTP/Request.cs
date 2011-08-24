@@ -21,6 +21,10 @@ namespace HTTP
 		{
 		}
 	}
+	
+	public enum RequestState {
+		Waiting, Reading, Done	
+	}
 
 	public class Request
 	{
@@ -35,7 +39,8 @@ namespace HTTP
 		public bool acceptGzip = true;
 		public bool useCache = false;
 		public Exception exception = null;
-
+		public RequestState state = RequestState.Waiting;
+		
 		Dictionary<string, List<string>> headers = new Dictionary<string, List<string>> ();
 		static Dictionary<string, string> etags = new Dictionary<string, string> ();
 
@@ -97,9 +102,10 @@ namespace HTTP
 		public void Send ()
 		{
 			isDone = false;
+			state = RequestState.Waiting;
 			if (acceptGzip)
 				SetHeader ("Accept-Encoding", "gzip");
-			ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(object state) {
+			ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(object t) {
 				try {
 					var retry = 0;
 					while (++retry < maximumRetryCount) {
@@ -119,13 +125,15 @@ namespace HTTP
 								try {
 									var ssl = ostream as SslStream;
 									ssl.AuthenticateAsClient (uri.Host);
-								} catch (AuthenticationException e) {
-									Debug.LogError ("Auth Exception: " + e.Message);
+								} catch (Exception e) {
+									Debug.LogError ("Exception: " + e.Message);
 									return;
 								}
 							}
 							WriteToStream (ostream);
-							response = new Response (ostream);
+							response = new Response ();
+							state = RequestState.Reading;
+							response.ReadFromStream(ostream);
 						}
 						client.Close ();
 						switch (response.status) {
@@ -151,6 +159,7 @@ namespace HTTP
 					exception = e;
 					response = null;
 				}
+				state = RequestState.Done;
 				isDone = true;
 			}));
 		}

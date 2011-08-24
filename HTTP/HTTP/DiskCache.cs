@@ -12,7 +12,39 @@ namespace HTTP
 		public bool fromCache = false;
 		public Request request = null;
 	}
+	
+#if UNITY_WEBPLAYER
+	public class DiskCache : MonoBehaviour
+	{
+		static DiskCache _instance = null;
+		public static DiskCache Instance {
+			get {
+				if (_instance == null) {
+					var g = new GameObject ("DiskCache", typeof(DiskCache));
+					g.hideFlags = HideFlags.HideAndDontSave;
+					_instance = g.GetComponent<DiskCache> ();
+				}
+				return _instance;
+			}
+		}
 
+		public DiskCacheOperation Fetch (Request request)
+		{
+			var handle = new DiskCacheOperation ();
+			handle.request = request;
+			StartCoroutine (Download (request, handle));
+			return handle;
+		}
+		
+		IEnumerator Download(Request request, DiskCacheOperation handle)
+		{
+			request.Send ();
+			while (!request.isDone)
+				yield return new WaitForEndOfFrame ();
+			handle.isDone = true;
+		}
+	}
+#else
 	public class DiskCache : MonoBehaviour
 	{
 		string cachePath = null;
@@ -82,4 +114,5 @@ namespace HTTP
 		}
 		
 	}
+#endif
 }

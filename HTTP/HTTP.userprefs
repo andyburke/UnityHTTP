@@ -2,17 +2,17 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
   <MonoDevelop.Ide.Workbench ActiveDocument="HTTP/Request.cs">
     <Files>
-      <File FileName="HTTP/Request.cs" Line="67" Column="4" />
-      <File FileName="HTTP/Tests/TestRequest.cs" Line="11" Column="3" />
-      <File FileName="HTTP/Response.cs" Line="119" Column="19" />
+      <File FileName="HTTP/Request.cs" Line="198" Column="1" />
+      <File FileName="HTTP/Response.cs" Line="133" Column="13" />
+      <File FileName="../../../Unity/DMU/Assets/DMU/Utilities/Manager.cs" Line="17" Column="4" />
+      <File FileName="../../../Unity/DMU/Assets/DMU/Utilities/DMG.cs" Line="44" Column="3" />
+      <File FileName="HTTP/DiskCache.cs" Line="86" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="HTTP" expanded="True">
+          <Node name="HTTP" expanded="True" selected="True">
             <Node name="References" expanded="True" />
-            <Node name="Tests" expanded="True" />
-            <Node name="Request.cs" selected="True" />
           </Node>
         </State>
       </Pad>
@@ -21,9 +21,6 @@
       </Pad>
       <Pad Id="MonoDevelop.Debugger.WatchPad">
         <State />
-      </Pad>
-      <Pad Id="MonoDevelop.NUnit.TestPad">
-        <State expanded="True" selected="True" />
       </Pad>
       <Pad Id="ConnectionManagerPad">
         <State selected="True" />
