@@ -1,0 +1,55 @@
+using UnityEngine;
+using System;
+using System.Collections;
+
+namespace HTTP
+{
+	public class ResponseCallbackDispatcher : MonoBehaviour
+    {
+        private static ResponseCallbackDispatcher singleton = null;
+        private static GameObject singletonGameObject = null;
+        private static object singletonLock = new object();
+
+        public static ResponseCallbackDispatcher Singleton {
+            get {
+                return singleton;
+            }
+        }
+
+        public Queue requests = new Queue();
+
+        public static void Init()
+        {
+            if ( singleton != null )
+            {
+                return;
+            }
+
+            lock( singletonLock )
+            {
+                if ( singleton != null )
+                {
+                    return;
+                }
+
+                singletonGameObject = new GameObject();
+                singleton = singletonGameObject.AddComponent< ResponseCallbackDispatcher >();
+                singletonGameObject.name = "HTTPResponseCallbackDispatcher";
+            }
+        }
+
+        private IEnumerator Dispatch( Request request )
+        {
+            request.completedCallback( request );
+            yield return null;
+        }
+
+        public void Update()
+        {
+            while( requests.Count > 0 )
+            {
+                StartCoroutine( Dispatch( (Request)requests.Dequeue() ) );
+            }
+        }
+    }
+}

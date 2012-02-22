@@ -19,13 +19,16 @@ namespace HTTP
 		{
 		}
 	}
-	
+
 	public enum RequestState {
-		Waiting, Reading, Done	
+		Waiting, Reading, Done
 	}
 
 	public class Request
 	{
+        public static bool LogAllRequests = false;
+        public static bool VerboseLogging = false;
+
 		public CookieJar cookieJar = CookieJar.Instance;
 		public string method = "GET";
 		public string protocol = "HTTP/1.1";
@@ -39,7 +42,10 @@ namespace HTTP
 		public bool useCache = false;
 		public Exception exception = null;
 		public RequestState state = RequestState.Waiting;
-		
+        public long responseTime = 0; // in milliseconds
+
+		public Action< HTTP.Request > completedCallback = null;
+
 		Dictionary<string, List<string>> headers = new Dictionary<string, List<string>> ();
 		static Dictionary<string, string> etags = new Dictionary<string, string> ();
 
@@ -62,7 +68,7 @@ namespace HTTP
 			this.uri = new Uri (uri);
 			this.bytes = bytes;
 		}
-        
+
         public Request( string method, string uri, WWWForm form )
         {
 			this.method = method;
@@ -99,10 +105,10 @@ namespace HTTP
                     result.Add( name + ": " + value );
 				}
 			}
-            
+
             return result;
         }
-        
+
 		public List<string> GetHeaders (string name)
 		{
 			name = name.ToLower ().Trim ();
@@ -121,13 +127,29 @@ namespace HTTP
 			headers[name].Add (value);
 		}
 
-		public void Send ()
+        // TODO: get rid of this when Unity's default monodevelop supports default arguments
+        public void Send()
+        {
+            Send( null );
+        }
+
+		public void Send( Action< HTTP.Request > callback )
 		{
+            if ( callback != null && ResponseCallbackDispatcher.Singleton == null )
+            {
+                ResponseCallbackDispatcher.Init();
+            }
+
+            System.Diagnostics.Stopwatch curcall = new System.Diagnostics.Stopwatch();
+            curcall.Start();
+
+            completedCallback = callback;
+
 			isDone = false;
 			state = RequestState.Waiting;
 			if (acceptGzip)
 				SetHeader ("Accept-Encoding", "gzip");
-			
+
 			if ( this.cookieJar != null )
 			{
 				List< Cookie > cookies = this.cookieJar.GetCookies( new CookieAccessInfo( uri.Host, uri.AbsolutePath ) );
@@ -146,15 +168,15 @@ namespace HTTP
 			if ( bytes != null && bytes.Length > 0 && GetHeader ("Content-Length") == "" ) {
                 SetHeader( "Content-Length", bytes.Length.ToString() );
             }
-			
+
             if ( GetHeader( "User-Agent" ) == "" ) {
                 SetHeader( "User-Agent", "UnityWeb 1.0 ( Unity " + Application.unityVersion + " ) ( " + SystemInfo.operatingSystem + " )" );
             }
-            
+
             if ( GetHeader( "Connection" ) == "" ) {
                 SetHeader( "Connection", "close" );
             }
-            
+
 			ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(object t) {
 				try {
 					var retry = 0;
@@ -165,7 +187,9 @@ namespace HTTP
 								SetHeader ("If-None-Match", etag);
 							}
 						}
+
 						SetHeader ("Host", uri.Host);
+
 						var client = new TcpClient ();
 						client.Connect (uri.Host, uri.Port);
 						using (var stream = client.GetStream ()) {
@@ -187,6 +211,7 @@ namespace HTTP
 							response.ReadFromStream(ostream);
 						}
 						client.Close ();
+
 						switch (response.status) {
 						case 307:
 						case 302:
@@ -203,7 +228,7 @@ namespace HTTP
 						if (etag.Length > 0)
 							etags[uri.AbsoluteUri] = etag;
 					}
-					
+
 				} catch (Exception e) {
 					Console.WriteLine ("Unhandled Exception, aborting request.");
 					Console.WriteLine (e);
@@ -212,7 +237,30 @@ namespace HTTP
 				}
 				state = RequestState.Done;
 				isDone = true;
-			}));
+                responseTime = curcall.ElapsedMilliseconds;
+
+                if ( completedCallback != null )
+                {
+                    // we have to use this dispatcher to avoid executing the callback inside this worker thread
+                    ResponseCallbackDispatcher.Singleton.requests.Enqueue( this );
+                }
+
+                if ( LogAllRequests )
+                {
+                    if ( response != null && response.status >= 200 && response.status < 300 )
+                    {
+                        Debug.Log( InfoString( VerboseLogging ) );
+                    }
+                    else if ( response != null && response.status >= 400 )
+                    {
+                        Debug.LogError( InfoString( VerboseLogging ) );
+                    }
+                    else
+                    {
+                        Debug.LogWarning( InfoString( VerboseLogging ) );
+                    }
+                }
+            }));
 		}
 
 		public string Text {
@@ -247,6 +295,36 @@ namespace HTTP
 				stream.Write (bytes);
 			}
 		}
+
+        private static string[] sizes = { "B", "KB", "MB", "GB" };
+        public string InfoString( bool verbose )
+        {
+            string status = isDone && response != null ? response.status.ToString() : "---";
+            string message = isDone && response != null ? response.message : "Unknown";
+            double size = isDone && response != null && response.bytes != null ? response.bytes.Length : 0.0f;
+
+            int order = 0;
+            while ( size >= 1024.0f && order + 1 < sizes.Length )
+            {
+                ++order;
+                size /= 1024.0f;
+            }
+
+            string sizeString = String.Format( "{0:0.##}{1}", size, sizes[ order ] );
+
+            string result = uri.ToString() + " [ " + method.ToUpper() + " ] [ " + status + " " + message + " ] [ " + sizeString + " ] [ " + responseTime + "ms ]";
+
+            if ( verbose && response != null )
+            {
+                result += "\n\n" + String.Join( "\n", response.GetHeaders().ToArray() );
+
+                if ( response.Text != null )
+                {
+                    result += "\n\n" + response.Text;
+                }
+            }
+
+            return result;
+        }
 	}
 }
-

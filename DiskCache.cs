@@ -12,7 +12,7 @@ namespace HTTP
 		public bool fromCache = false;
 		public Request request = null;
 	}
-	
+
 #if UNITY_WEBPLAYER
 	public class DiskCache : MonoBehaviour
 	{
@@ -35,7 +35,7 @@ namespace HTTP
 			StartCoroutine (Download (request, handle));
 			return handle;
 		}
-		
+
 		IEnumerator Download(Request request, DiskCacheOperation handle)
 		{
 			request.Send ();
@@ -74,7 +74,7 @@ namespace HTTP
 			foreach (var b in System.Security.Cryptography.MD5.Create ().ComputeHash (System.Text.ASCIIEncoding.ASCII.GetBytes (request.uri.ToString ()))) {
 				guid = guid + b.ToString ("X2");
 			}
-			
+
 			var filename = System.IO.Path.Combine (cachePath, guid);
 			if (File.Exists (filename) && File.Exists (filename + ".etag"))
 				request.SetHeader ("If-None-Match", File.ReadAllText (filename + ".etag"));
@@ -87,7 +87,8 @@ namespace HTTP
 		IEnumerator DownloadAndSave (Request request, string filename, DiskCacheOperation handle)
 		{
 			var useCachedVersion = File.Exists(filename);
-			request.Send ();
+            Action< HTTP.Request > callback = request.completedCallback;
+			request.Send(); // will clear the completedCallback
 			while (!request.isDone)
 				yield return new WaitForEndOfFrame ();
 			if (request.exception == null && request.response != null) {
@@ -100,7 +101,7 @@ namespace HTTP
 					useCachedVersion = false;
 				}
 			}
-			
+
 			if(useCachedVersion) {
 				if(request.exception != null) {
 					Debug.LogWarning("Using cached version due to exception:" + request.exception);
@@ -111,8 +112,13 @@ namespace HTTP
 				request.isDone = true;
 			}
 			handle.isDone = true;
+
+            if ( callback != null )
+            {
+                callback( request );
+            }
 		}
-		
+
 	}
 #endif
 }

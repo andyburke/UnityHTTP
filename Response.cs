@@ -13,7 +13,7 @@ namespace HTTP
 		public int status = 200;
 		public string message = "OK";
 		public byte[] bytes;
-		
+
 		List<byte[]> chunks;
 		Dictionary<string, List<string>> headers = new Dictionary<string, List<string>> ();
 
@@ -39,6 +39,18 @@ namespace HTTP
 				headers[name] = new List<string> ();
 			headers[name].Add (value);
 		}
+
+        public List< string > GetHeaders()
+        {
+            List< string > result = new List< string >();
+            foreach (string name in headers.Keys) {
+				foreach (string value in headers[name]) {
+                    result.Add( name + ": " + value );
+				}
+			}
+
+            return result;
+        }
 
 		public List<string> GetHeaders (string name)
 		{
@@ -88,9 +100,9 @@ namespace HTTP
 				parts[1] = line.Substring (split + 1).Trim ();
 				return parts;
 			}
-			
+
 		}
-		
+
 		public byte[] TakeChunk() {
 			byte[] b = null;
 			lock(chunks) {
@@ -108,13 +120,13 @@ namespace HTTP
 			//var inputStream = new BinaryReader(inputStream);
 			var top = ReadLine (inputStream).Split (new char[] { ' ' });
 			var output = new MemoryStream ();
-			
+
 			if (!int.TryParse (top[1], out status))
 				throw new HTTPException ("Bad Status Code");
-			
+
 			message = string.Join (" ", top, 2, top.Length - 2);
 			headers.Clear ();
-			
+
 			while (true) {
 				// Collect Headers
 				string[] parts = ReadKeyValue (inputStream);
@@ -122,7 +134,7 @@ namespace HTTP
 					break;
 				AddHeader (parts[0], parts[1]);
 			}
-			
+
 			if ( request.cookieJar != null )
 			{
 				List< string > cookies = GetHeaders( "set-cookie" );
@@ -133,16 +145,16 @@ namespace HTTP
 					{
 						cookieString += "; domain=" + request.uri.Host;
 					}
-					
+
 					if ( cookieString.IndexOf( "path=", StringComparison.CurrentCultureIgnoreCase ) == -1 )
 					{
 						cookieString += "; path=" + request.uri.AbsolutePath;
 					}
-	
+
 					request.cookieJar.SetCookie( new Cookie( cookieString ) );
 				}
 			}
-			
+
 			if (GetHeader ("transfer-encoding") == "chunked") {
 				chunks = new List<byte[]> ();
 				while (true) {
@@ -169,7 +181,7 @@ namespace HTTP
 					inputStream.ReadByte ();
 					inputStream.ReadByte ();
 				}
-				
+
 				while (true) {
 					//Collect Trailers
 					string[] parts = ReadKeyValue (inputStream);
@@ -182,37 +194,37 @@ namespace HTTP
 					unchunked.AddRange(i);
 				}
 				bytes = unchunked.ToArray();
-				
+
 			} else {
 				// Read Body
 				int contentLength = 0;
-				
+
 				try {
 					contentLength = int.Parse (GetHeader ("content-length"));
 				} catch {
 					contentLength = 0;
 				}
-				
+
 				int _b;
-				while( (_b = inputStream.ReadByte()) != -1 
+				while( (_b = inputStream.ReadByte()) != -1
 				         && ( contentLength == 0 || output.Length < contentLength ) ) {
 					output.WriteByte((byte)_b);
 				}
-				
+
 				if( contentLength > 0 && output.Length != contentLength ) {
 					throw new HTTPException ("Response length does not match content length");
 				}
-				
+
 				if (GetHeader ("content-encoding").Contains ("gzip")) {
 					bytes = UnZip(output);
 				} else {
 					bytes = output.ToArray ();
 				}
 			}
-			
+
 		}
-		
-		
+
+
 		byte[] UnZip(MemoryStream output) {
 			var cms = new MemoryStream ();
 			output.Seek (0, SeekOrigin.Begin);
@@ -223,9 +235,8 @@ namespace HTTP
 					cms.Write (buf, 0, byteCount);
 				}
 			}
-			return cms.ToArray ();	
+			return cms.ToArray ();
 		}
-		
+
 	}
 }
-
