@@ -16,7 +16,7 @@ namespace HTTP
             }
         }
 
-        public Queue requests = new Queue();
+        public Queue requests = Queue.Synchronized( new Queue() );
 
         public static void Init()
         {
@@ -38,17 +38,12 @@ namespace HTTP
             }
         }
 
-        private IEnumerator Dispatch( Request request )
-        {
-            request.completedCallback( request );
-            yield return null;
-        }
-
         public void Update()
         {
             while( requests.Count > 0 )
             {
-                StartCoroutine( Dispatch( (Request)requests.Dequeue() ) );
+                HTTP.Request request = (Request)requests.Dequeue();
+                request.completedCallback( request );
             }
         }
     }
