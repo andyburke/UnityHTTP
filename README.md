@@ -7,6 +7,7 @@ Based on Simon Wittber's UnityWeb code (http://code.google.com/p/unityweb/).
 This is a TcpClient-based HTTP library for use in Unity.  It should work in
 both the standalone player and in the web player.
 
+It also has convenience methods for working with JSON.
 # Examples
 
 IEnumerator example:
@@ -46,7 +47,40 @@ form.AddField( "otherthing", "hey" );
 HTTP.Request someRequest = new HTTP.Request( "post", "http://someurl.com/some/post/handler", form );
 someRequest.Send( ( request ) => {
     // parse some JSON, for example:
-    JSONObject thing = new JSONObject( request.response.Text );
+    bool result = false;
+    Hashtable thing = (Hashtable)JSON.JsonDecode( request.response.Text, ref result );
+    if ( !result )
+    {
+        Debug.LogWarning( "Could not parse JSON response!" );
+        return;
+    }
+});
+```
+
+Post request using JSON:
+
+```C#
+Hashtable data = new Hashtable();
+data.Add( "something", "hey!" );
+data.Add( "otherthing", "YO!!!!" );
+
+// When you pass a Hashtable as the third argument, we assume you want it send as JSON-encoded
+// data.  We'll encode it to JSON for you and set the Content-Type header to application/json
+HTTP.Request theRequest = new HTTP.Request( "post", "http://someurl.com/a/json/post/handler", data );
+theRequest.Send( ( request ) => {
+
+    // we provide Object and Array convenience methods that attempt to parse the response as JSON
+    // if the response cannot be parsed, we will return null
+    // note that if you want to send json that isn't either an object ({...}) or an array ([...])
+    // that you should use JSON.JsonDecode directly on the response.Text, Object and Array are
+    // only provided for convenience
+    Hashtable result = request.response.Object;
+    if ( result == null )
+    {
+        Debug.LogWarning( "Could not parse JSON response!" );
+        return;
+    }
+  
 });
 ```
 
