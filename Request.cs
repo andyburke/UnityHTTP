@@ -80,6 +80,14 @@ namespace HTTP
             }
         }
 
+        public Request( string method, string uri, Hashtable data )
+        {
+            this.method = method;
+            this.uri = new Uri( uri );
+            this.bytes = Encoding.UTF8.GetBytes( JSON.JsonEncode( data ) );
+            this.AddHeader( "Content-Type", "application/json" );
+        }
+        
 		public void AddHeader (string name, string value)
 		{
 			name = name.ToLower ().Trim ();

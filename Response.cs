@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -31,6 +32,42 @@ namespace HTTP
 			}
 		}
 
+        public Hashtable Object {
+            get {
+                if ( bytes == null )
+                {
+                    return null;
+                }
+                
+                bool result = false;
+                Hashtable obj = (Hashtable)JSON.JsonDecode( this.Text, ref result );
+                if ( !result )
+                {
+                    obj = null;
+                }
+                
+                return obj;
+            }
+        }
+        
+        public ArrayList Array {
+            get {
+                if ( bytes == null )
+                {
+                    return null;
+                }
+                
+                bool result = false;
+                ArrayList array = (ArrayList)JSON.JsonDecode( this.Text, ref result );
+                if ( !result )
+                {
+                    array = null;
+                }
+                
+                return array;
+            }
+        }
+        
 		void AddHeader (string name, string value)
 		{
 			name = name.ToLower ().Trim ();
