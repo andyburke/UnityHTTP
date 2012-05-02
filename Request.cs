@@ -124,6 +124,7 @@ namespace HTTP
 			if (!headers.ContainsKey (name))
 				headers[name] = new List<string> ();
 			headers[name].Clear ();
+			headers[name].TrimExcess();
 			headers[name].Add (value);
 		}
 
@@ -247,6 +248,9 @@ namespace HTTP
 
                 if ( LogAllRequests )
                 {
+#if !UNITY_EDITOR
+					System.Console.WriteLine("NET: " + InfoString( VerboseLogging ));
+#else
                     if ( response != null && response.status >= 200 && response.status < 300 )
                     {
                         Debug.Log( InfoString( VerboseLogging ) );
@@ -259,6 +263,7 @@ namespace HTTP
                     {
                         Debug.LogWarning( InfoString( VerboseLogging ) );
                     }
+#endif
                 }
             }));
 		}
@@ -270,7 +275,11 @@ namespace HTTP
 
 		public static bool ValidateServerCertificate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
 		{
-			Debug.LogWarning ("SSL Cert Error:" + sslPolicyErrors.ToString ());
+#if !UNITY_EDITOR
+            System.Console.WriteLine( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
+#else
+			Debug.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
+#endif
 			return true;
 		}
 
@@ -316,11 +325,12 @@ namespace HTTP
 
             if ( verbose && response != null )
             {
-                result += "\n\n" + String.Join( "\n", response.GetHeaders().ToArray() );
+                result += "\n\nRequest Headers:\n\n" + String.Join( "\n", GetHeaders().ToArray() );
+                result += "\n\nResponse Headers:\n\n" + String.Join( "\n", response.GetHeaders().ToArray() );
 
                 if ( response.Text != null )
                 {
-                    result += "\n\n" + response.Text;
+                    result += "\n\nResponse Body:\n" + response.Text;
                 }
             }
 

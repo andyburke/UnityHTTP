@@ -35,3 +35,18 @@ someRequest.Send( ( request ) => {
     JSONObject thing = new JSONObject( request.response.Text );
 });
 ```
+
+Post request using form data:
+
+```C#
+WWWForm form = new WWWForm();
+form.AddField( "something", "yo" );
+form.AddField( "otherthing", "hey" );
+
+HTTP.Request someRequest = new HTTP.Request( "post", "http://someurl.com/some/post/handler", form );
+someRequest.Send( ( request ) => {
+    // parse some JSON, for example:
+    JSONObject thing = new JSONObject( request.response.Text );
+});
+```
+

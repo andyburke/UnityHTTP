@@ -44,10 +44,10 @@ namespace HTTP
         {
             List< string > result = new List< string >();
             foreach (string name in headers.Keys) {
-				foreach (string value in headers[name]) {
+                foreach (string value in headers[name]) {
                     result.Add( name + ": " + value );
-				}
-			}
+                }
+            }
 
             return result;
         }
@@ -77,10 +77,13 @@ namespace HTTP
 		{
 			var line = new List<byte> ();
 			while (true) {
-				byte c = (byte)stream.ReadByte ();
-				if (c == Request.EOL[1])
+				int c = stream.ReadByte ();
+                if (c == -1) {
+                    throw new HTTPException("Unterminated Stream Encountered.");
+                }
+				if ((byte)c == Request.EOL[1])
 					break;
-				line.Add (c);
+				line.Add ((byte)c);
 			}
 			var s = ASCIIEncoding.ASCII.GetString (line.ToArray ()).Trim ();
 			return s;
@@ -119,109 +122,111 @@ namespace HTTP
 		{
 			//var inputStream = new BinaryReader(inputStream);
 			var top = ReadLine (inputStream).Split (new char[] { ' ' });
-			var output = new MemoryStream ();
 
 			if (!int.TryParse (top[1], out status))
 				throw new HTTPException ("Bad Status Code");
 
-			message = string.Join (" ", top, 2, top.Length - 2);
-			headers.Clear ();
+            // MemoryStream is a disposable
+            // http://stackoverflow.com/questions/234059/is-a-memory-leak-created-if-a-memorystream-in-net-is-not-closed
+            using (var output = new MemoryStream ()) {
+                message = string.Join (" ", top, 2, top.Length - 2);
+                headers.Clear ();
 
-			while (true) {
-				// Collect Headers
-				string[] parts = ReadKeyValue (inputStream);
-				if (parts == null)
-					break;
-				AddHeader (parts[0], parts[1]);
-			}
+                while (true) {
+                    // Collect Headers
+                    string[] parts = ReadKeyValue (inputStream);
+                    if (parts == null)
+                        break;
+                    AddHeader (parts[0], parts[1]);
+                }
 
-			if ( request.cookieJar != null )
-			{
-				List< string > cookies = GetHeaders( "set-cookie" );
-				for ( int cookieIndex = 0; cookieIndex < cookies.Count; ++cookieIndex )
-				{
-					string cookieString = cookies[ cookieIndex ];
-			        if ( cookieString.IndexOf( "domain=", StringComparison.CurrentCultureIgnoreCase ) == -1 )
-					{
-						cookieString += "; domain=" + request.uri.Host;
-					}
+                if ( request.cookieJar != null )
+                {
+                    List< string > cookies = GetHeaders( "set-cookie" );
+                    for ( int cookieIndex = 0; cookieIndex < cookies.Count; ++cookieIndex )
+                    {
+                        string cookieString = cookies[ cookieIndex ];
+                        if ( cookieString.IndexOf( "domain=", StringComparison.CurrentCultureIgnoreCase ) == -1 )
+                        {
+                            cookieString += "; domain=" + request.uri.Host;
+                        }
 
-					if ( cookieString.IndexOf( "path=", StringComparison.CurrentCultureIgnoreCase ) == -1 )
-					{
-						cookieString += "; path=" + request.uri.AbsolutePath;
-					}
+                        if ( cookieString.IndexOf( "path=", StringComparison.CurrentCultureIgnoreCase ) == -1 )
+                        {
+                            cookieString += "; path=" + request.uri.AbsolutePath;
+                        }
 
-					request.cookieJar.SetCookie( new Cookie( cookieString ) );
-				}
-			}
+                        request.cookieJar.SetCookie( new Cookie( cookieString ) );
+                    }
+                }
 
-			if (GetHeader ("transfer-encoding") == "chunked") {
-				chunks = new List<byte[]> ();
-				while (true) {
-					// Collect Body
-					string hexLength = ReadLine (inputStream);
-					//Console.WriteLine("HexLength:" + hexLength);
-					if (hexLength == "0") {
-						lock(chunks) {
-							chunks.Add(new byte[] {});
-						}
-						break;
-					}
-					int length = int.Parse (hexLength, NumberStyles.AllowHexSpecifier);
-					for (int i = 0; i < length; i++)
-						output.WriteByte ((byte)inputStream.ReadByte ());
-					lock(chunks) {
-						if (GetHeader ("content-encoding").Contains ("gzip"))
-							chunks.Add (UnZip(output));
-						else
-							chunks.Add (output.ToArray ());
-					}
-					output.SetLength (0);
-					//forget the CRLF.
-					inputStream.ReadByte ();
-					inputStream.ReadByte ();
-				}
+                if (GetHeader ("transfer-encoding") == "chunked") {
+                    chunks = new List<byte[]> ();
+                    while (true) {
+                        // Collect Body
+                        string hexLength = ReadLine (inputStream);
+                        //Console.WriteLine("HexLength:" + hexLength);
+                        if (hexLength == "0") {
+                            lock(chunks) {
+                                chunks.Add(new byte[] {});
+                            }
+                            break;
+                        }
+                        int length = int.Parse (hexLength, NumberStyles.AllowHexSpecifier);
+                        for (int i = 0; i < length; i++)
+                            output.WriteByte ((byte)inputStream.ReadByte ());
+                        lock(chunks) {
+                            if (GetHeader ("content-encoding").Contains ("gzip"))
+                                chunks.Add (UnZip(output));
+                            else
+                                chunks.Add (output.ToArray ());
+                        }
+                        output.SetLength (0);
+                        //forget the CRLF.
+                        inputStream.ReadByte ();
+                        inputStream.ReadByte ();
+                    }
 
-				while (true) {
-					//Collect Trailers
-					string[] parts = ReadKeyValue (inputStream);
-					if (parts == null)
-						break;
-					AddHeader (parts[0], parts[1]);
-				}
-				var unchunked = new List<byte>();
-				foreach(var i in chunks) {
-					unchunked.AddRange(i);
-				}
-				bytes = unchunked.ToArray();
+                    while (true) {
+                        //Collect Trailers
+                        string[] parts = ReadKeyValue (inputStream);
+                        if (parts == null)
+                            break;
+                        AddHeader (parts[0], parts[1]);
+                    }
+                    var unchunked = new List<byte>();
+                    foreach(var i in chunks) {
+                        unchunked.AddRange(i);
+                    }
+                    bytes = unchunked.ToArray();
 
-			} else {
-				// Read Body
-				int contentLength = 0;
+                } else {
+                    // Read Body
+                    int contentLength = 0;
 
-				try {
-					contentLength = int.Parse (GetHeader ("content-length"));
-				} catch {
-					contentLength = 0;
-				}
+                    try {
+                        contentLength = int.Parse (GetHeader ("content-length"));
+                    } catch {
+                        contentLength = 0;
+                    }
 
-				int _b;
-				while( (_b = inputStream.ReadByte()) != -1
-				         && ( contentLength == 0 || output.Length < contentLength ) ) {
-					output.WriteByte((byte)_b);
-				}
+                    int _b;
+                    while( (_b = inputStream.ReadByte()) != -1
+                             && ( contentLength == 0 || output.Length < contentLength ) ) {
+                        output.WriteByte((byte)_b);
+                    }
 
-				if( contentLength > 0 && output.Length != contentLength ) {
-					throw new HTTPException ("Response length does not match content length");
-				}
+                    if( contentLength > 0 && output.Length != contentLength ) {
+                        throw new HTTPException ("Response length does not match content length");
+                    }
 
-				if (GetHeader ("content-encoding").Contains ("gzip")) {
-					bytes = UnZip(output);
-				} else {
-					bytes = output.ToArray ();
-				}
-			}
-
+                    if (GetHeader ("content-encoding").Contains ("gzip")) {
+                        bytes = UnZip(output);
+                    } else {
+                        bytes = output.ToArray ();
+                    }
+                }
+            }
 		}
 
 

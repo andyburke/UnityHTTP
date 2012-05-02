@@ -71,9 +71,13 @@ namespace HTTP
 		public DiskCacheOperation Fetch (Request request)
 		{
 			var guid = "";
-			foreach (var b in System.Security.Cryptography.MD5.Create ().ComputeHash (System.Text.ASCIIEncoding.ASCII.GetBytes (request.uri.ToString ()))) {
-				guid = guid + b.ToString ("X2");
-			}
+            // MD5 is disposable
+            // http://msdn.microsoft.com/en-us/library/system.security.cryptography.md5.aspx#3
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create ()) {
+                foreach (var b in md5.ComputeHash (System.Text.ASCIIEncoding.ASCII.GetBytes (request.uri.ToString ()))) {
+                    guid = guid + b.ToString ("X2");
+                }
+            }
 
 			var filename = System.IO.Path.Combine (cachePath, guid);
 			if (File.Exists (filename) && File.Exists (filename + ".etag"))
