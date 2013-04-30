@@ -144,10 +144,12 @@ namespace HTTP
 
 		public void Send( Action< HTTP.Request > callback )
 		{
+#if !UNITY_EDITOR			
             if ( callback != null && ResponseCallbackDispatcher.Singleton == null )
             {
                 ResponseCallbackDispatcher.Init();
             }
+#endif			
 
             System.Diagnostics.Stopwatch curcall = new System.Diagnostics.Stopwatch();
             curcall.Start();
@@ -185,6 +187,11 @@ namespace HTTP
             if ( GetHeader( "Connection" ) == "" ) {
                 SetHeader( "Connection", "close" );
             }
+			
+			// Basic Authorization
+			if (uri.UserInfo != null) {	
+				SetHeader("Authorization", "Basic " + System.Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(uri.UserInfo)));
+			}
 
 			ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(object t) {
 				try {
@@ -250,8 +257,13 @@ namespace HTTP
 
                 if ( completedCallback != null )
                 {
+#if !UNITY_EDITOR
                     // we have to use this dispatcher to avoid executing the callback inside this worker thread
                     ResponseCallbackDispatcher.Singleton.requests.Enqueue( this );
+#else
+					// call back immediately
+					completedCallback(this);
+#endif
                 }
 
                 if ( LogAllRequests )
