@@ -193,7 +193,10 @@ namespace HTTP
 				SetHeader("Authorization", "Basic " + System.Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(uri.UserInfo)));
 			}
 
+#if !UNITY_EDITOR			
+			// only use the ThreadPool in Play Mode, run synchronously in main thread in Edit Mode
 			ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(object t) {
+#endif
 				try {
 					var retry = 0;
 					while (++retry < maximumRetryCount) {
@@ -285,7 +288,9 @@ namespace HTTP
                     }
 #endif
                 }
-            }));
+#if !UNITY_EDITOR			
+            })); // ThreadPool
+#endif
 		}
 
 		public string Text {
