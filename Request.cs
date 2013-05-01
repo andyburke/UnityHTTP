@@ -189,7 +189,7 @@ namespace HTTP
             }
 			
 			// Basic Authorization
-			if (uri.UserInfo != null) {	
+			if (!String.IsNullOrEmpty(uri.UserInfo)) {	
 				SetHeader("Authorization", "Basic " + System.Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(uri.UserInfo)));
 			}
 
