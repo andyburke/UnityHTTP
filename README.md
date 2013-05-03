@@ -84,3 +84,17 @@ theRequest.Send( ( request ) => {
 });
 ```
 
+If you want to make a request while not in Play Mode (e. g. from a custom Editor menu command or wizard), you must use the Request synchronously, since Unity's main update loop is not running. The call will block until the response is available.
+
+```C#
+Hashtable data = new Hashtable();
+data.Add( "something", "hey!" );
+data.Add( "otherthing", "YO!!!!" );
+
+HTTP.Request theRequest = new HTTP.Request("post", "http://someurl.com/a/json/post/handler", data );
+theRequest.synchronous = true;
+theRequest.Send((request) => {
+	EditorUtility.DisplayDialog("Request was posted.", request.response.Text, "Ok");
+});
+```
+
