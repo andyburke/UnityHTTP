@@ -43,6 +43,7 @@ namespace HTTP
 		public Exception exception = null;
 		public RequestState state = RequestState.Waiting;
         public long responseTime = 0; // in milliseconds
+		public bool synchronous = false;
 
 		public Action< HTTP.Request > completedCallback = null;
 
@@ -141,18 +142,110 @@ namespace HTTP
         {
             Send( null );
         }
+		
+		private void GetResponse() {
+            System.Diagnostics.Stopwatch curcall = new System.Diagnostics.Stopwatch();
+	        curcall.Start();
+			try {
 
+				var retry = 0;
+				while (++retry < maximumRetryCount) {
+					if (useCache) {
+						string etag = "";
+						if (etags.TryGetValue (uri.AbsoluteUri, out etag)) {
+							SetHeader ("If-None-Match", etag);
+						}
+					}
+
+					SetHeader ("Host", uri.Host);
+
+					var client = new TcpClient ();
+					client.Connect (uri.Host, uri.Port);
+					using (var stream = client.GetStream ()) {
+						var ostream = stream as Stream;
+						if (uri.Scheme.ToLower() == "https") {
+							ostream = new SslStream (stream, false, new RemoteCertificateValidationCallback (ValidateServerCertificate));
+							try {
+								var ssl = ostream as SslStream;
+								ssl.AuthenticateAsClient (uri.Host);
+							} catch (Exception e) {
+								Debug.LogError ("Exception: " + e.Message);
+								return;
+							}
+						}
+						WriteToStream (ostream);
+						response = new Response ();
+						response.request = this;
+						state = RequestState.Reading;
+						response.ReadFromStream(ostream);
+					}
+					client.Close ();
+
+					switch (response.status) {
+					case 307:
+					case 302:
+					case 301:
+						uri = new Uri (response.GetHeader ("Location"));
+						continue;
+					default:
+						retry = maximumRetryCount;
+						break;
+					}
+				}
+				if (useCache) {
+					string etag = response.GetHeader ("etag");
+					if (etag.Length > 0)
+						etags[uri.AbsoluteUri] = etag;
+				}
+
+			} catch (Exception e) {
+				Console.WriteLine ("Unhandled Exception, aborting request.");
+				Console.WriteLine (e);
+				exception = e;
+				response = null;
+			}
+			state = RequestState.Done;
+			isDone = true;
+            responseTime = curcall.ElapsedMilliseconds;
+
+            if ( completedCallback != null )
+            {
+				if (synchronous) {
+					completedCallback(this);
+				} else {
+                    // we have to use this dispatcher to avoid executing the callback inside this worker thread
+	                ResponseCallbackDispatcher.Singleton.requests.Enqueue( this );
+				}
+            }
+
+            if ( LogAllRequests )
+            {
+#if !UNITY_EDITOR
+				System.Console.WriteLine("NET: " + InfoString( VerboseLogging ));
+#else
+                if ( response != null && response.status >= 200 && response.status < 300 )
+                {
+                    Debug.Log( InfoString( VerboseLogging ) );
+                }
+                else if ( response != null && response.status >= 400 )
+                {
+                    Debug.LogError( InfoString( VerboseLogging ) );
+                }
+                else
+                {
+                    Debug.LogWarning( InfoString( VerboseLogging ) );
+                }
+#endif
+            }			
+		}
+		
 		public void Send( Action< HTTP.Request > callback )
 		{
-#if !UNITY_EDITOR			
-            if ( callback != null && ResponseCallbackDispatcher.Singleton == null )
+			
+            if (!synchronous && callback != null && ResponseCallbackDispatcher.Singleton == null )
             {
                 ResponseCallbackDispatcher.Init();
             }
-#endif			
-
-            System.Diagnostics.Stopwatch curcall = new System.Diagnostics.Stopwatch();
-            curcall.Start();
 
             completedCallback = callback;
 
@@ -189,108 +282,17 @@ namespace HTTP
             }
 			
 			// Basic Authorization
-			if (uri.UserInfo != null) {	
+			if (!String.IsNullOrEmpty(uri.UserInfo)) {	
 				SetHeader("Authorization", "Basic " + System.Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(uri.UserInfo)));
 			}
-
-#if !UNITY_EDITOR			
-			// only use the ThreadPool in Play Mode, run synchronously in main thread in Edit Mode
-			ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(object t) {
-#endif
-				try {
-					var retry = 0;
-					while (++retry < maximumRetryCount) {
-						if (useCache) {
-							string etag = "";
-							if (etags.TryGetValue (uri.AbsoluteUri, out etag)) {
-								SetHeader ("If-None-Match", etag);
-							}
-						}
-
-						SetHeader ("Host", uri.Host);
-
-						var client = new TcpClient ();
-						client.Connect (uri.Host, uri.Port);
-						using (var stream = client.GetStream ()) {
-							var ostream = stream as Stream;
-							if (uri.Scheme.ToLower() == "https") {
-								ostream = new SslStream (stream, false, new RemoteCertificateValidationCallback (ValidateServerCertificate));
-								try {
-									var ssl = ostream as SslStream;
-									ssl.AuthenticateAsClient (uri.Host);
-								} catch (Exception e) {
-									Debug.LogError ("Exception: " + e.Message);
-									return;
-								}
-							}
-							WriteToStream (ostream);
-							response = new Response ();
-							response.request = this;
-							state = RequestState.Reading;
-							response.ReadFromStream(ostream);
-						}
-						client.Close ();
-
-						switch (response.status) {
-						case 307:
-						case 302:
-						case 301:
-							uri = new Uri (response.GetHeader ("Location"));
-							continue;
-						default:
-							retry = maximumRetryCount;
-							break;
-						}
-					}
-					if (useCache) {
-						string etag = response.GetHeader ("etag");
-						if (etag.Length > 0)
-							etags[uri.AbsoluteUri] = etag;
-					}
-
-				} catch (Exception e) {
-					Console.WriteLine ("Unhandled Exception, aborting request.");
-					Console.WriteLine (e);
-					exception = e;
-					response = null;
-				}
-				state = RequestState.Done;
-				isDone = true;
-                responseTime = curcall.ElapsedMilliseconds;
-
-                if ( completedCallback != null )
-                {
-#if !UNITY_EDITOR
-                    // we have to use this dispatcher to avoid executing the callback inside this worker thread
-                    ResponseCallbackDispatcher.Singleton.requests.Enqueue( this );
-#else
-					// call back immediately
-					completedCallback(this);
-#endif
-                }
-
-                if ( LogAllRequests )
-                {
-#if !UNITY_EDITOR
-					System.Console.WriteLine("NET: " + InfoString( VerboseLogging ));
-#else
-                    if ( response != null && response.status >= 200 && response.status < 300 )
-                    {
-                        Debug.Log( InfoString( VerboseLogging ) );
-                    }
-                    else if ( response != null && response.status >= 400 )
-                    {
-                        Debug.LogError( InfoString( VerboseLogging ) );
-                    }
-                    else
-                    {
-                        Debug.LogWarning( InfoString( VerboseLogging ) );
-                    }
-#endif
-                }
-#if !UNITY_EDITOR			
-            })); // ThreadPool
-#endif
+			
+			if (synchronous) {
+				GetResponse();
+			} else {
+				ThreadPool.QueueUserWorkItem (new WaitCallback ( delegate(object t) {
+					GetResponse();
+				})); 
+			}
 		}
 
 		public string Text {
