@@ -274,7 +274,7 @@ namespace HTTP
             }
 
             if ( GetHeader( "User-Agent" ) == "" ) {
-                SetHeader( "User-Agent", "UnityWeb 1.0 ( Unity " + Application.unityVersion + " ) ( " + SystemInfo.operatingSystem + " )" );
+                SetHeader("User-Agent", "UnityWeb/1.0 (Unity " + Application.unityVersion + "; " + SystemInfo.operatingSystem + ")");
             }
 
             if ( GetHeader( "Connection" ) == "" ) {
