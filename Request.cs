@@ -242,7 +242,7 @@ namespace HTTP
 		public void Send( Action< HTTP.Request > callback )
 		{
 			
-            if (!synchronous && callback != null && !ResponseCallbackDispatcher.IsInitialized)
+            if (!synchronous && callback != null && ResponseCallbackDispatcher.Singleton == null )
             {
                 ResponseCallbackDispatcher.Init();
             }
