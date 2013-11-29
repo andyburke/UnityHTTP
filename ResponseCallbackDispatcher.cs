@@ -9,7 +9,9 @@ namespace HTTP
         private static ResponseCallbackDispatcher singleton = null;
         private static GameObject singletonGameObject = null;
         private static object singletonLock = new object();
-
+		
+		public static bool IsInitialized { get; set; }
+		
         public static ResponseCallbackDispatcher Singleton {
             get {
                 return singleton;
@@ -35,6 +37,7 @@ namespace HTTP
                 singletonGameObject = new GameObject();
                 singleton = singletonGameObject.AddComponent< ResponseCallbackDispatcher >();
                 singletonGameObject.name = "HTTPResponseCallbackDispatcher";
+				IsInitialized = true;
             }
         }
 
