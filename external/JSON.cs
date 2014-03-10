@@ -271,14 +271,18 @@ public class JSON
 		int lastIndex = GetLastIndexOfNumber (json, index);
 		int charLength = (lastIndex - index) + 1;
 		
-		float number;
 		var token = new string (json, index, charLength);
-		success = float.TryParse (token, NumberStyles.Any, CultureInfo.InvariantCulture, out number);
-		index = lastIndex + 1;
-		if(token.Contains("."))
-			return (float)number;
-		else
-			return (int)number;
+		if (token.Contains(".")) {
+			float number;
+			success = float.TryParse (token, NumberStyles.Any, CultureInfo.InvariantCulture, out number);
+			index = lastIndex + 1;
+			return number;
+		} else {
+			int number;
+			success = int.TryParse(token, out number);
+			index = lastIndex + 1;
+			return number;
+		}
 	}
 
 	protected static int GetLastIndexOfNumber (char[] json, int index)

@@ -305,7 +305,7 @@ namespace HTTP
 #if !UNITY_EDITOR
             System.Console.WriteLine( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
 #else
-			Debug.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
+			//Debug.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
 #endif
 			return true;
 		}
