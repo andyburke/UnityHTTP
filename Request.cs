@@ -137,13 +137,7 @@ namespace HTTP
 			headers[name].Add (value);
 		}
 
-        // TODO: get rid of this when Unity's default monodevelop supports default arguments
-        public void Send()
-        {
-            Send( null );
-        }
-		
-		private void GetResponse() {
+        private void GetResponse() {
             System.Diagnostics.Stopwatch curcall = new System.Diagnostics.Stopwatch();
 	        curcall.Start();
 			try {
@@ -239,7 +233,7 @@ namespace HTTP
             }			
 		}
 		
-		public void Send( Action< HTTP.Request > callback )
+		public virtual void Send( Action< HTTP.Request > callback = null)
 		{
 			
             if (!synchronous && callback != null && ResponseCallbackDispatcher.Singleton == null )
