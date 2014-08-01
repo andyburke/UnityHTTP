@@ -401,6 +401,8 @@ public class JSON
 			builder.Append ("false");
 		} else if (value == null) {
 			builder.Append ("null");
+		} else if(value.GetType().IsArray) {
+			success = SerializeArray((object[])value, builder);
 		} else {
 			success = false;
 		}
@@ -454,6 +456,29 @@ public class JSON
 		}
 		
 		builder.Append ("]");
+		return true;
+	}
+
+	protected static bool SerializeArray(object[] anArray, StringBuilder builder) 
+	{
+		builder.Append("[");
+		
+		bool first = true;
+		for(int i = 0; i < anArray.Length; i++) {
+			object value = anArray[i];
+			
+			if(!first) {
+				builder.Append(", ");
+			}
+			
+			if(!SerializeValue(value, builder)) {
+				return false;
+			}
+			
+			first = false;
+		}
+		
+		builder.Append("]");
 		return true;
 	}
 
