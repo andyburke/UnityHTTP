@@ -137,7 +137,7 @@ namespace HTTP
 			headers[name].Add (value);
 		}
 
-        private void GetResponse() {
+		private void GetResponse() {
             System.Diagnostics.Stopwatch curcall = new System.Diagnostics.Stopwatch();
 	        curcall.Start();
 			try {
