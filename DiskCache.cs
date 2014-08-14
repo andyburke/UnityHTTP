@@ -70,7 +70,7 @@ namespace HTTP
 
 		public DiskCacheOperation Fetch (Request request)
 		{
-			var guid = "";
+            var guid = string.Empty;
             // MD5 is disposable
             // http://msdn.microsoft.com/en-us/library/system.security.cryptography.md5.aspx#3
             using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create ()) {
@@ -98,7 +98,7 @@ namespace HTTP
 			if (request.exception == null && request.response != null) {
 				if (request.response.status == 200) {
 					var etag = request.response.GetHeader ("etag");
-					if (etag != "") {
+					if (etag != string.Empty) {
 						File.WriteAllBytes (filename, request.response.bytes);
 						File.WriteAllText (filename + ".etag", etag);
 					}
