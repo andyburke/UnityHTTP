@@ -15,7 +15,6 @@ namespace HTTP
         public string message = "OK";
         public byte[] bytes;
 
-        List<byte[]> chunks;
         Dictionary<string, List<string>> headers = new Dictionary<string, List<string>> ();
 
         public string Text {
@@ -143,19 +142,7 @@ namespace HTTP
 
         }
 
-        public byte[] TakeChunk() {
-            byte[] b = null;
-            lock(chunks) {
-                if(chunks.Count > 0) {
-                    b = chunks[0];
-                    chunks.RemoveAt(0);
-                    return b;
-                }
-            }
-            return b;
-        }
-
-        public void ReadFromStream (Stream inputStream)
+        public void ReadFromStream( Stream inputStream )
         {
             //var inputStream = new BinaryReader(inputStream);
             var top = ReadLine (inputStream).Split (new char[] { ' ' });
@@ -171,10 +158,10 @@ namespace HTTP
 
                 while (true) {
                     // Collect Headers
-                    string[] parts = ReadKeyValue (inputStream);
-                    if (parts == null)
+                    string[] parts = ReadKeyValue( inputStream );
+                    if ( parts == null )
                         break;
-                    AddHeader (parts[0], parts[1]);
+                    AddHeader( parts[ 0 ], parts[ 1 ] );
                 }
 
                 if ( request.cookieJar != null )
@@ -197,52 +184,38 @@ namespace HTTP
                     }
                 }
 
-                if (GetHeader ("transfer-encoding") == "chunked") {
-                    chunks = new List<byte[]> ();
+                if ( GetHeader( "transfer-encoding" ) == "chunked" ) {
                     while (true) {
                         // Collect Body
-                        string hexLength = ReadLine (inputStream);
-                        //Console.WriteLine("HexLength:" + hexLength);
-                        if (hexLength == "0") {
-                            lock(chunks) {
-                                chunks.Add(new byte[] {});
-                            }
+                        int length = int.Parse( ReadLine( inputStream ), NumberStyles.AllowHexSpecifier );
+
+                        if ( length == 0 ) {
                             break;
                         }
-                        int length = int.Parse (hexLength, NumberStyles.AllowHexSpecifier);
-                        for (int i = 0; i < length; i++)
-                            output.WriteByte ((byte)inputStream.ReadByte ());
-                        lock(chunks) {
-                            if (GetHeader ("content-encoding").Contains ("gzip"))
-                                chunks.Add (UnZip(output));
-                            else
-                                chunks.Add (output.ToArray ());
+                        
+                        for (int i = 0; i < length; i++) {
+                            output.WriteByte( (byte)inputStream.ReadByte() );
                         }
-                        output.SetLength (0);
+
                         //forget the CRLF.
-                        inputStream.ReadByte ();
-                        inputStream.ReadByte ();
+                        inputStream.ReadByte();
+                        inputStream.ReadByte();
                     }
 
                     while (true) {
                         //Collect Trailers
-                        string[] parts = ReadKeyValue (inputStream);
-                        if (parts == null)
+                        string[] parts = ReadKeyValue( inputStream );
+                        if ( parts == null )
                             break;
-                        AddHeader (parts[0], parts[1]);
+                        AddHeader( parts[0], parts[1] );
                     }
-                    var unchunked = new List<byte>();
-                    foreach(var i in chunks) {
-                        unchunked.AddRange(i);
-                    }
-                    bytes = unchunked.ToArray();
-
+                    
                 } else {
                     // Read Body
                     int contentLength = 0;
 
                     try {
-                        contentLength = int.Parse (GetHeader ("content-length"));
+                        contentLength = int.Parse( GetHeader("content-length") );
                     } catch {
                         contentLength = 0;
                     }
@@ -256,12 +229,13 @@ namespace HTTP
                     if( contentLength > 0 && output.Length != contentLength ) {
                         throw new HTTPException ("Response length does not match content length");
                     }
+                }
 
-                    if (GetHeader ("content-encoding").Contains ("gzip")) {
-                        bytes = UnZip(output);
-                    } else {
-                        bytes = output.ToArray ();
-                    }
+                if ( GetHeader( "content-encoding" ).Contains( "gzip" ) ) {
+                    bytes = UnZip( output );
+                }
+                else {
+                    bytes = output.ToArray();
                 }
             }
         }
@@ -269,15 +243,15 @@ namespace HTTP
 
         byte[] UnZip(MemoryStream output) {
             var cms = new MemoryStream ();
-            output.Seek (0, SeekOrigin.Begin);
-            using (var gz = new GZipStream (output, CompressionMode.Decompress)) {
+            output.Seek(0, SeekOrigin.Begin);
+            using (var gz = new GZipStream(output, CompressionMode.Decompress)) {
                 var buf = new byte[1024];
                 int byteCount = 0;
-                while ((byteCount = gz.Read (buf, 0, buf.Length)) > 0) {
-                    cms.Write (buf, 0, byteCount);
+                while ((byteCount = gz.Read(buf, 0, buf.Length)) > 0) {
+                    cms.Write(buf, 0, byteCount);
                 }
             }
-            return cms.ToArray ();
+            return cms.ToArray();
         }
 
     }

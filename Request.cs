@@ -167,11 +167,11 @@ namespace HTTP
                                 return;
                             }
                         }
-                        WriteToStream (ostream);
+                        WriteToStream( ostream );
                         response = new Response ();
                         response.request = this;
                         state = RequestState.Reading;
-                        response.ReadFromStream(ostream);
+                        response.ReadFromStream( ostream );
                     }
                     client.Close ();
 
@@ -305,25 +305,25 @@ namespace HTTP
             return true;
         }
 
-        void WriteToStream (Stream outputStream)
+        void WriteToStream( Stream outputStream )
         {
-            var stream = new BinaryWriter (outputStream);
-            stream.Write (ASCIIEncoding.ASCII.GetBytes (method.ToUpper () + " " + uri.PathAndQuery + " " + protocol));
-            stream.Write (EOL);
+            var stream = new BinaryWriter( outputStream );
+            stream.Write( ASCIIEncoding.ASCII.GetBytes( method.ToUpper () + " " + uri.PathAndQuery + " " + protocol ) );
+            stream.Write( EOL );
 
             foreach (string name in headers.Keys) {
                 foreach (string value in headers[name]) {
-                    stream.Write (ASCIIEncoding.ASCII.GetBytes (name));
-                    stream.Write (':');
-                    stream.Write (ASCIIEncoding.ASCII.GetBytes (value));
-                    stream.Write (EOL);
+                    stream.Write( ASCIIEncoding.ASCII.GetBytes( name ) );
+                    stream.Write( ':');
+                    stream.Write( ASCIIEncoding.ASCII.GetBytes( value ) );
+                    stream.Write( EOL );
                 }
             }
 
-            stream.Write (EOL);
+            stream.Write( EOL );
 
-            if (bytes != null && bytes.Length > 0) {
-                stream.Write (bytes);
+            if ( bytes != null && bytes.Length > 0 ) {
+                stream.Write( bytes );
             }
         }
 
