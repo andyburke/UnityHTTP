@@ -4,7 +4,7 @@ using System.Collections;
 
 namespace HTTP
 {
-	public class ResponseCallbackDispatcher : MonoBehaviour
+    public class ResponseCallbackDispatcher : MonoBehaviour
     {
         private static ResponseCallbackDispatcher singleton = null;
         private static GameObject singletonGameObject = null;

@@ -13,67 +13,67 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace HTTP
 {
-	public class HTTPException : Exception
-	{
-		public HTTPException (string message) : base(message)
-		{
-		}
-	}
+    public class HTTPException : Exception
+    {
+        public HTTPException (string message) : base(message)
+        {
+        }
+    }
 
-	public enum RequestState {
-		Waiting, Reading, Done
-	}
+    public enum RequestState {
+        Waiting, Reading, Done
+    }
 
-	public class Request
-	{
+    public class Request
+    {
         public static bool LogAllRequests = false;
         public static bool VerboseLogging = false;
 
-		public CookieJar cookieJar = CookieJar.Instance;
-		public string method = "GET";
-		public string protocol = "HTTP/1.1";
-		public byte[] bytes;
-		public Uri uri;
-		public static byte[] EOL = { (byte)'\r', (byte)'\n' };
-		public Response response = null;
-		public bool isDone = false;
-		public int maximumRetryCount = 8;
-		public bool acceptGzip = true;
-		public bool useCache = false;
-		public Exception exception = null;
-		public RequestState state = RequestState.Waiting;
+        public CookieJar cookieJar = CookieJar.Instance;
+        public string method = "GET";
+        public string protocol = "HTTP/1.1";
+        public byte[] bytes;
+        public Uri uri;
+        public static byte[] EOL = { (byte)'\r', (byte)'\n' };
+        public Response response = null;
+        public bool isDone = false;
+        public int maximumRetryCount = 8;
+        public bool acceptGzip = true;
+        public bool useCache = false;
+        public Exception exception = null;
+        public RequestState state = RequestState.Waiting;
         public long responseTime = 0; // in milliseconds
 
-		public Action< HTTP.Request > completedCallback = null;
+        public Action< HTTP.Request > completedCallback = null;
 
-		Dictionary<string, List<string>> headers = new Dictionary<string, List<string>> ();
-		static Dictionary<string, string> etags = new Dictionary<string, string> ();
+        Dictionary<string, List<string>> headers = new Dictionary<string, List<string>> ();
+        static Dictionary<string, string> etags = new Dictionary<string, string> ();
 
-		public Request (string method, string uri)
-		{
-			this.method = method;
-			this.uri = new Uri (uri);
-		}
+        public Request (string method, string uri)
+        {
+            this.method = method;
+            this.uri = new Uri (uri);
+        }
 
-		public Request (string method, string uri, bool useCache)
-		{
-			this.method = method;
-			this.uri = new Uri (uri);
-			this.useCache = useCache;
-		}
+        public Request (string method, string uri, bool useCache)
+        {
+            this.method = method;
+            this.uri = new Uri (uri);
+            this.useCache = useCache;
+        }
 
-		public Request (string method, string uri, byte[] bytes)
-		{
-			this.method = method;
-			this.uri = new Uri (uri);
-			this.bytes = bytes;
-		}
+        public Request (string method, string uri, byte[] bytes)
+        {
+            this.method = method;
+            this.uri = new Uri (uri);
+            this.bytes = bytes;
+        }
 
         public Request( string method, string uri, WWWForm form )
         {
-			this.method = method;
-			this.uri = new Uri (uri);
-			this.bytes = form.data;
+            this.method = method;
+            this.uri = new Uri (uri);
+            this.bytes = form.data;
             foreach ( DictionaryEntry entry in form.headers )
             {
                 this.AddHeader( (string)entry.Key, (string)entry.Value );
@@ -88,53 +88,53 @@ namespace HTTP
             this.AddHeader( "Content-Type", "application/json" );
         }
         
-		public void AddHeader (string name, string value)
-		{
-			name = name.ToLower ().Trim ();
-			value = value.Trim ();
-			if (!headers.ContainsKey (name))
-				headers[name] = new List<string> ();
-			headers[name].Add (value);
-		}
+        public void AddHeader (string name, string value)
+        {
+            name = name.ToLower ().Trim ();
+            value = value.Trim ();
+            if (!headers.ContainsKey (name))
+                headers[name] = new List<string> ();
+            headers[name].Add (value);
+        }
 
-		public string GetHeader (string name)
-		{
-			name = name.ToLower ().Trim ();
-			if (!headers.ContainsKey (name))
-				return "";
-			return headers[name][0];
-		}
+        public string GetHeader (string name)
+        {
+            name = name.ToLower ().Trim ();
+            if (!headers.ContainsKey (name))
+                return "";
+            return headers[name][0];
+        }
 
         public List< string > GetHeaders()
         {
             List< string > result = new List< string >();
             foreach (string name in headers.Keys) {
-				foreach (string value in headers[name]) {
+                foreach (string value in headers[name]) {
                     result.Add( name + ": " + value );
-				}
-			}
+                }
+            }
 
             return result;
         }
 
-		public List<string> GetHeaders (string name)
-		{
-			name = name.ToLower ().Trim ();
-			if (!headers.ContainsKey (name))
-				headers[name] = new List<string> ();
-			return headers[name];
-		}
+        public List<string> GetHeaders (string name)
+        {
+            name = name.ToLower ().Trim ();
+            if (!headers.ContainsKey (name))
+                headers[name] = new List<string> ();
+            return headers[name];
+        }
 
-		public void SetHeader (string name, string value)
-		{
-			name = name.ToLower ().Trim ();
-			value = value.Trim ();
-			if (!headers.ContainsKey (name))
-				headers[name] = new List<string> ();
-			headers[name].Clear ();
-			headers[name].TrimExcess();
-			headers[name].Add (value);
-		}
+        public void SetHeader (string name, string value)
+        {
+            name = name.ToLower ().Trim ();
+            value = value.Trim ();
+            if (!headers.ContainsKey (name))
+                headers[name] = new List<string> ();
+            headers[name].Clear ();
+            headers[name].TrimExcess();
+            headers[name].Add (value);
+        }
 
         // TODO: get rid of this when Unity's default monodevelop supports default arguments
         public void Send()
@@ -142,8 +142,8 @@ namespace HTTP
             Send( null );
         }
 
-		public void Send( Action< HTTP.Request > callback )
-		{
+        public void Send( Action< HTTP.Request > callback )
+        {
             if ( callback != null && ResponseCallbackDispatcher.Singleton == null )
             {
                 ResponseCallbackDispatcher.Init();
@@ -154,27 +154,27 @@ namespace HTTP
 
             completedCallback = callback;
 
-			isDone = false;
-			state = RequestState.Waiting;
-			if (acceptGzip)
-				SetHeader ("Accept-Encoding", "gzip");
+            isDone = false;
+            state = RequestState.Waiting;
+            if (acceptGzip)
+                SetHeader ("Accept-Encoding", "gzip");
 
-			if ( this.cookieJar != null )
-			{
-				List< Cookie > cookies = this.cookieJar.GetCookies( new CookieAccessInfo( uri.Host, uri.AbsolutePath ) );
-								string cookieString = this.GetHeader( "cookie" );
-				for ( int cookieIndex = 0; cookieIndex < cookies.Count; ++cookieIndex )
-				{
-					if ( cookieString.Length > 0 && cookieString[ cookieString.Length - 1 ] != ';' )
-					{
-						cookieString += ';';
-					}
-					cookieString += cookies[ cookieIndex ].name + '=' + cookies[ cookieIndex ].value + ';';
-				}
-		        SetHeader( "cookie", cookieString );
-		    }
+            if ( this.cookieJar != null )
+            {
+                List< Cookie > cookies = this.cookieJar.GetCookies( new CookieAccessInfo( uri.Host, uri.AbsolutePath ) );
+                                string cookieString = this.GetHeader( "cookie" );
+                for ( int cookieIndex = 0; cookieIndex < cookies.Count; ++cookieIndex )
+                {
+                    if ( cookieString.Length > 0 && cookieString[ cookieString.Length - 1 ] != ';' )
+                    {
+                        cookieString += ';';
+                    }
+                    cookieString += cookies[ cookieIndex ].name + '=' + cookies[ cookieIndex ].value + ';';
+                }
+                SetHeader( "cookie", cookieString );
+            }
 
-			if ( bytes != null && bytes.Length > 0 && GetHeader ("Content-Length") == "" ) {
+            if ( bytes != null && bytes.Length > 0 && GetHeader ("Content-Length") == "" ) {
                 SetHeader( "Content-Length", bytes.Length.ToString() );
             }
 
@@ -186,66 +186,66 @@ namespace HTTP
                 SetHeader( "Connection", "close" );
             }
 
-			ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(object t) {
-				try {
-					var retry = 0;
-					while (++retry < maximumRetryCount) {
-						if (useCache) {
-							string etag = "";
-							if (etags.TryGetValue (uri.AbsoluteUri, out etag)) {
-								SetHeader ("If-None-Match", etag);
-							}
-						}
+            ThreadPool.QueueUserWorkItem (new WaitCallback (delegate(object t) {
+                try {
+                    var retry = 0;
+                    while (++retry < maximumRetryCount) {
+                        if (useCache) {
+                            string etag = "";
+                            if (etags.TryGetValue (uri.AbsoluteUri, out etag)) {
+                                SetHeader ("If-None-Match", etag);
+                            }
+                        }
 
-						SetHeader ("Host", uri.Host);
+                        SetHeader ("Host", uri.Host);
 
-						var client = new TcpClient ();
-						client.Connect (uri.Host, uri.Port);
-						using (var stream = client.GetStream ()) {
-							var ostream = stream as Stream;
-							if (uri.Scheme.ToLower() == "https") {
-								ostream = new SslStream (stream, false, new RemoteCertificateValidationCallback (ValidateServerCertificate));
-								try {
-									var ssl = ostream as SslStream;
-									ssl.AuthenticateAsClient (uri.Host);
-								} catch (Exception e) {
-									Debug.LogError ("Exception: " + e.Message);
-									return;
-								}
-							}
-							WriteToStream (ostream);
-							response = new Response ();
-							response.request = this;
-							state = RequestState.Reading;
-							response.ReadFromStream(ostream);
-						}
-						client.Close ();
+                        var client = new TcpClient ();
+                        client.Connect (uri.Host, uri.Port);
+                        using (var stream = client.GetStream ()) {
+                            var ostream = stream as Stream;
+                            if (uri.Scheme.ToLower() == "https") {
+                                ostream = new SslStream (stream, false, new RemoteCertificateValidationCallback (ValidateServerCertificate));
+                                try {
+                                    var ssl = ostream as SslStream;
+                                    ssl.AuthenticateAsClient (uri.Host);
+                                } catch (Exception e) {
+                                    Debug.LogError ("Exception: " + e.Message);
+                                    return;
+                                }
+                            }
+                            WriteToStream (ostream);
+                            response = new Response ();
+                            response.request = this;
+                            state = RequestState.Reading;
+                            response.ReadFromStream(ostream);
+                        }
+                        client.Close ();
 
-						switch (response.status) {
-						case 307:
-						case 302:
-						case 301:
-							uri = new Uri (response.GetHeader ("Location"));
-							continue;
-						default:
-							retry = maximumRetryCount;
-							break;
-						}
-					}
-					if (useCache) {
-						string etag = response.GetHeader ("etag");
-						if (etag.Length > 0)
-							etags[uri.AbsoluteUri] = etag;
-					}
+                        switch (response.status) {
+                        case 307:
+                        case 302:
+                        case 301:
+                            uri = new Uri (response.GetHeader ("Location"));
+                            continue;
+                        default:
+                            retry = maximumRetryCount;
+                            break;
+                        }
+                    }
+                    if (useCache) {
+                        string etag = response.GetHeader ("etag");
+                        if (etag.Length > 0)
+                            etags[uri.AbsoluteUri] = etag;
+                    }
 
-				} catch (Exception e) {
-					Console.WriteLine ("Unhandled Exception, aborting request.");
-					Console.WriteLine (e);
-					exception = e;
-					response = null;
-				}
-				state = RequestState.Done;
-				isDone = true;
+                } catch (Exception e) {
+                    Console.WriteLine ("Unhandled Exception, aborting request.");
+                    Console.WriteLine (e);
+                    exception = e;
+                    response = null;
+                }
+                state = RequestState.Done;
+                isDone = true;
                 responseTime = curcall.ElapsedMilliseconds;
 
                 if ( completedCallback != null )
@@ -257,7 +257,7 @@ namespace HTTP
                 if ( LogAllRequests )
                 {
 #if !UNITY_EDITOR
-					System.Console.WriteLine("NET: " + InfoString( VerboseLogging ));
+                    System.Console.WriteLine("NET: " + InfoString( VerboseLogging ));
 #else
                     if ( response != null && response.status >= 200 && response.status < 300 )
                     {
@@ -274,44 +274,44 @@ namespace HTTP
 #endif
                 }
             }));
-		}
+        }
 
-		public string Text {
-			set { bytes = System.Text.Encoding.UTF8.GetBytes (value); }
-		}
+        public string Text {
+            set { bytes = System.Text.Encoding.UTF8.GetBytes (value); }
+        }
 
 
-		public static bool ValidateServerCertificate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-		{
+        public static bool ValidateServerCertificate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
 #if !UNITY_EDITOR
             System.Console.WriteLine( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
 #else
-			Debug.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
+            Debug.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
 #endif
-			return true;
-		}
+            return true;
+        }
 
-		void WriteToStream (Stream outputStream)
-		{
-			var stream = new BinaryWriter (outputStream);
-			stream.Write (ASCIIEncoding.ASCII.GetBytes (method.ToUpper () + " " + uri.PathAndQuery + " " + protocol));
-			stream.Write (EOL);
+        void WriteToStream (Stream outputStream)
+        {
+            var stream = new BinaryWriter (outputStream);
+            stream.Write (ASCIIEncoding.ASCII.GetBytes (method.ToUpper () + " " + uri.PathAndQuery + " " + protocol));
+            stream.Write (EOL);
 
-			foreach (string name in headers.Keys) {
-				foreach (string value in headers[name]) {
-					stream.Write (ASCIIEncoding.ASCII.GetBytes (name));
-					stream.Write (':');
-					stream.Write (ASCIIEncoding.ASCII.GetBytes (value));
-					stream.Write (EOL);
-				}
-			}
+            foreach (string name in headers.Keys) {
+                foreach (string value in headers[name]) {
+                    stream.Write (ASCIIEncoding.ASCII.GetBytes (name));
+                    stream.Write (':');
+                    stream.Write (ASCIIEncoding.ASCII.GetBytes (value));
+                    stream.Write (EOL);
+                }
+            }
 
             stream.Write (EOL);
 
-			if (bytes != null && bytes.Length > 0) {
-				stream.Write (bytes);
-			}
-		}
+            if (bytes != null && bytes.Length > 0) {
+                stream.Write (bytes);
+            }
+        }
 
         private static string[] sizes = { "B", "KB", "MB", "GB" };
         public string InfoString( bool verbose )
@@ -344,5 +344,5 @@ namespace HTTP
 
             return result;
         }
-	}
+    }
 }
