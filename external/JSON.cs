@@ -271,14 +271,20 @@ public class JSON
 		int lastIndex = GetLastIndexOfNumber (json, index);
 		int charLength = (lastIndex - index) + 1;
 		
-		float number;
 		var token = new string (json, index, charLength);
-		success = float.TryParse (token, NumberStyles.Any, CultureInfo.InvariantCulture, out number);
 		index = lastIndex + 1;
-		if(token.Contains("."))
-			return (float)number;
-		else
-			return (int)number;
+		if ( token.Contains( "." ) )
+		{
+			float number;
+ 			success = float.TryParse (token, NumberStyles.Any, CultureInfo.InvariantCulture, out number);
+ 			return number;
+ 		}
+ 		else
+ 		{
+ 			int number;
+ 			success = int.TryParse(token, out number);
+ 			return number;
+ 		}
 	}
 
 	protected static int GetLastIndexOfNumber (char[] json, int index)
@@ -395,6 +401,8 @@ public class JSON
 			builder.Append ("false");
 		} else if (value == null) {
 			builder.Append ("null");
+		} else if(value.GetType().IsArray) {
+			success = SerializeArray((object[])value, builder);
 		} else {
 			success = false;
 		}
@@ -448,6 +456,29 @@ public class JSON
 		}
 		
 		builder.Append ("]");
+		return true;
+	}
+
+	protected static bool SerializeArray(object[] anArray, StringBuilder builder) 
+	{
+		builder.Append("[");
+		
+		bool first = true;
+		for(int i = 0; i < anArray.Length; i++) {
+			object value = anArray[i];
+			
+			if(!first) {
+				builder.Append(", ");
+			}
+			
+			if(!SerializeValue(value, builder)) {
+				return false;
+			}
+			
+			first = false;
+		}
+		
+		builder.Append("]");
 		return true;
 	}
 

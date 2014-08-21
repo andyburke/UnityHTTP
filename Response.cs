@@ -248,8 +248,8 @@ namespace HTTP
                     }
 
                     int _b;
-                    while( (_b = inputStream.ReadByte()) != -1
-                             && ( contentLength == 0 || output.Length < contentLength ) ) {
+                    while( ( contentLength == 0 || output.Length < contentLength )
+                              && (_b = inputStream.ReadByte()) != -1 ) {
                         output.WriteByte((byte)_b);
                     }
 
