@@ -12,7 +12,7 @@ using System.Text;
 /// Spec. details, see http://www.json.org/
 /// 
 /// JSON uses Arrays and Objects. These correspond here to the datatypes ArrayList and Hashtable.
-/// All numbers are parsed to floats or ints.
+/// All numbers are parsed to floats, ints, or longs.
 /// </summary>
 public class JSON
 {
@@ -279,10 +279,16 @@ public class JSON
  			success = float.TryParse (token, NumberStyles.Any, CultureInfo.InvariantCulture, out number);
  			return number;
  		}
- 		else
+ 		else if(token.Length <= 10)
  		{
  			int number;
  			success = int.TryParse(token, out number);
+ 			return number;
+ 		} 
+ 		else 
+ 		{
+ 			long number;
+ 			success = long.TryParse(token, out number);
  			return number;
  		}
 	}
