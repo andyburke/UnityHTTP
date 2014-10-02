@@ -12,7 +12,7 @@ using System.Text;
 /// Spec. details, see http://www.json.org/
 /// 
 /// JSON uses Arrays and Objects. These correspond here to the datatypes ArrayList and Hashtable.
-/// All numbers are parsed to floats or ints.
+/// All numbers are parsed to floats, ints, or longs.
 /// </summary>
 public class JSON
 {
