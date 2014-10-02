@@ -279,10 +279,16 @@ public class JSON
  			success = float.TryParse (token, NumberStyles.Any, CultureInfo.InvariantCulture, out number);
  			return number;
  		}
- 		else
+ 		else if(token.Length <= 10)
  		{
  			int number;
  			success = int.TryParse(token, out number);
+ 			return number;
+ 		} 
+ 		else 
+ 		{
+ 			long number;
+ 			success = long.TryParse(token, out number);
  			return number;
  		}
 	}
