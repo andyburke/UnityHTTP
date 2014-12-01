@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,42 +10,45 @@
     <RootNamespace>HTTP</RootNamespace>
     <AssemblyName>HTTP</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <ReleaseVersion>0.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
+    <Optimize>False</Optimize>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <WarningLevel>0</WarningLevel>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Release</OutputPath>
+    <Optimize>False</Optimize>
+    <OutputPath>bin\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Ionic.Zlib, Version=1.9.1.5, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Unity\DMU\Assets\DMU\DLL\Ionic.Zlib.dll</HintPath>
+    <Reference Include="Ionic.Zlib">
+      <HintPath>libs\Ionic.Zlib.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Applications\Unity\Unity.app\Contents\Frameworks\Managed\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\..\Applications\Unity\Unity.app\Contents\Frameworks\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Request.cs" />
-    <Compile Include="Response.cs" />
-    <Compile Include="DiskCache.cs" />
+    <Compile Include="src\DiskCache.cs" />
+    <Compile Include="src\CookieJar.cs" />
+    <Compile Include="src\Request.cs" />
+    <Compile Include="src\Response.cs" />
+    <Compile Include="src\ResponseCallbackDispatcher.cs" />
+    <Compile Include="libs\JSON.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="src\" />
+  </ItemGroup>
 </Project>
