@@ -98,7 +98,7 @@ namespace HTTP
             if (request.exception == null && request.response != null) {
                 if (request.response.status == 200) {
                     var etag = request.response.GetHeader ("etag");
-					if (etag != string.Empty) {
+                    if (etag != string.Empty) {
                         File.WriteAllBytes (filename, request.response.bytes);
                         File.WriteAllText (filename + ".etag", etag);
                     }
