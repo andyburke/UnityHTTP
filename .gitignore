@@ -3,3 +3,4 @@
 # these will be generated in compilation
 bin
 .DS_Store
+obj
