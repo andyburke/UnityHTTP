@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>1</id>
+    <version>1.0.0</version>
+    <title>UnityHTTP</title>
+    <authors>Andy Burke, Dawson Reid</authors>
+    <owners>Andy Burke</owners>
+    <licenseUrl>https://github.com/andyburke/UnityHTTP/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/andyburke/UnityHTTP</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A TcpClient-based HTTP library for Unity.</description>
+    <releaseNotes>First push to NuGet</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>Unity HTTP Web Game</tags>
+
+    <references>
+	  <group>
+	    <reference file="Ionic.Zlib.dll" />
+	  </group>
+	</references>
+  </metadata>
+  	
+  	<files>
+	  <file src="src/*.cs" target="src" /> 
+	  <file src="lib/*.cs" target="lib" />
+	  <file src="lib/*.dll" target="lib" /> 
+	</files>
+</package>
