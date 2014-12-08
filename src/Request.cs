@@ -270,7 +270,11 @@ namespace HTTP
             }
 
             if ( GetHeader( "User-Agent" ) == "" ) {
-                SetHeader( "User-Agent", "UnityWeb/1.0 (Unity " + Application.unityVersion + "; " + SystemInfo.operatingSystem + ")" );
+                try {
+                    SetHeader( "User-Agent", "UnityWeb/1.0 (Unity " + Application.unityVersion + "; " + SystemInfo.operatingSystem + ")" );
+                } catch (Exception) {
+                    SetHeader( "User-Agent", "UnityWeb/1.0" );
+                }
             }
 
             if ( GetHeader( "Connection" ) == "" ) {
