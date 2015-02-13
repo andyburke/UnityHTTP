@@ -28,6 +28,8 @@ namespace HTTP
     {
         public static bool LogAllRequests = false;
         public static bool VerboseLogging = false;
+        public static string unityVersion = Application.unityVersion;
+        public static string operatingSystem = SystemInfo.operatingSystem; 
 
         public CookieJar cookieJar = CookieJar.Instance;
         public string method = "GET";
@@ -271,7 +273,7 @@ namespace HTTP
 
             if ( GetHeader( "User-Agent" ) == "" ) {
                 try {
-                    SetHeader( "User-Agent", "UnityWeb/1.0 (Unity " + Application.unityVersion + "; " + SystemInfo.operatingSystem + ")" );
+                    SetHeader( "User-Agent", "UnityWeb/1.0 (Unity " + Request.unityVersion + "; " + Request.operatingSystem + ")" );
                 } catch (Exception) {
                     SetHeader( "User-Agent", "UnityWeb/1.0" );
                 }
