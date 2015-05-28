@@ -28,9 +28,9 @@ namespace HTTP
 	{
 		public delegate bool CertVerifierCB (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors);
 
-		public static CertVerifierCB verifier = new CertVerifierCB(ValidateServerCertificate);
+		public static CertVerifierCB verifier = new CertVerifierCB(DefaultServerCertificateValidator);
 
-		public static bool ValidateServerCertificate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+		public static bool DefaultServerCertificateValidator (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
 		{
 			#if !UNITY_EDITOR
 			System.Console.WriteLine( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
