@@ -33,6 +33,7 @@ namespace HTTP
                 }
 
                 singletonGameObject = new GameObject();
+                GameObject.DontDestroyOnLoad(singletonGameObject);
                 singleton = singletonGameObject.AddComponent< ResponseCallbackDispatcher >();
                 singletonGameObject.name = "HTTPResponseCallbackDispatcher";
             }
