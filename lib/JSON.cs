@@ -241,8 +241,12 @@ public class JSON
 						if (!(success = UInt32.TryParse (new string (json, index, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out codePoint))) {
 							return "";
 						}
-						// convert the integer codepoint to a unicode char and add to string
-						s.Append (Char.ConvertFromUtf32 ((int)codePoint));
+						try{
+							// convert the integer codepoint to a unicode char and add to string
+							s.Append (Char.ConvertFromUtf32 ((int)codePoint));
+						}catch(Exception e){
+							s.Append ( "" );
+						}
 						// skip 4 chars
 						index += 4;
 					} else {

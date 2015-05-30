@@ -24,6 +24,23 @@ namespace HTTP
         Waiting, Reading, Done
     }
 
+	public class CertVerifier
+	{
+		public delegate bool CertVerifierCB (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors);
+
+		public static CertVerifierCB verifier = new CertVerifierCB(DefaultServerCertificateValidator);
+
+		public static bool DefaultServerCertificateValidator (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+		{
+			#if !UNITY_EDITOR
+			System.Console.WriteLine( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
+			#else
+			Debug.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
+			#endif
+			return true;
+		}
+	}
+
     public class Request
     {
         public static bool LogAllRequests = false;
@@ -77,7 +94,7 @@ namespace HTTP
             this.method = method;
             this.uri = new Uri (uri);
             this.bytes = form.data;
-            foreach ( DictionaryEntry entry in form.headers )
+            foreach ( var entry in form.headers )
             {
                 this.AddHeader( (string)entry.Key, (string)entry.Value );
             }
@@ -160,7 +177,7 @@ namespace HTTP
                     using (var stream = client.GetStream ()) {
                         var ostream = stream as Stream;
                         if (uri.Scheme.ToLower() == "https") {
-                            ostream = new SslStream (stream, false, new RemoteCertificateValidationCallback (ValidateServerCertificate));
+                            ostream = new SslStream (stream, false, new RemoteCertificateValidationCallback (CertVerifier.verifier));
                             try {
                                 var ssl = ostream as SslStream;
                                 ssl.AuthenticateAsClient (uri.Host);
@@ -299,16 +316,6 @@ namespace HTTP
 
         public string Text {
             set { bytes = System.Text.Encoding.UTF8.GetBytes (value); }
-        }
-
-        public static bool ValidateServerCertificate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-        {
-#if !UNITY_EDITOR
-            System.Console.WriteLine( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
-#else
-            Debug.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
-#endif
-            return true;
         }
 
         void WriteToStream( Stream outputStream )
