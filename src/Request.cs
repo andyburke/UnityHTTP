@@ -26,6 +26,7 @@ namespace HTTP
 
     public class Request
     {
+
         public static bool LogAllRequests = false;
         public static bool VerboseLogging = false;
         public static string unityVersion = Application.unityVersion;
@@ -34,7 +35,7 @@ namespace HTTP
         public CookieJar cookieJar = CookieJar.Instance;
         public string method = "GET";
         public string protocol = "HTTP/1.1";
-        public byte[] bytes;
+        public Stream byteStream;
         public Uri uri;
         public static byte[] EOL = { (byte)'\r', (byte)'\n' };
         public Response response = null;
@@ -46,6 +47,7 @@ namespace HTTP
         public RequestState state = RequestState.Waiting;
         public long responseTime = 0; // in milliseconds
         public bool synchronous = false;
+        public int bufferSize = 4 * 1024;
 
         public Action< HTTP.Request > completedCallback = null;
 
@@ -69,25 +71,36 @@ namespace HTTP
         {
             this.method = method;
             this.uri = new Uri (uri);
-            this.bytes = bytes;
+            this.byteStream = new MemoryStream(bytes);
         }
 
-        public Request( string method, string uri, WWWForm form )
-        {
+        public Request(string method, string uri, StreamedWWWForm form){
             this.method = method;
             this.uri = new Uri (uri);
-            this.bytes = form.data;
+            this.byteStream = form.stream;
             foreach ( DictionaryEntry entry in form.headers )
             {
                 this.AddHeader( (string)entry.Key, (string)entry.Value );
             }
         }
 
+        public Request( string method, string uri, WWWForm form )
+        {
+            this.method = method;
+            this.uri = new Uri (uri);
+            this.byteStream = new MemoryStream(form.data);
+            foreach ( DictionaryEntry entry in form.headers )
+            {
+                this.AddHeader( (string)entry.Key, (string)entry.Value );
+            }
+
+        }
+
         public Request( string method, string uri, Hashtable data )
         {
             this.method = method;
             this.uri = new Uri( uri );
-            this.bytes = Encoding.UTF8.GetBytes( JSON.JsonEncode( data ) );
+            this.byteStream = new MemoryStream(Encoding.UTF8.GetBytes( JSON.JsonEncode( data ) ));
             this.AddHeader( "Content-Type", "application/json" );
         }
         
@@ -267,8 +280,8 @@ namespace HTTP
                 SetHeader( "cookie", cookieString );
             }
 
-            if ( bytes != null && bytes.Length > 0 && GetHeader ("Content-Length") == "" ) {
-                SetHeader( "Content-Length", bytes.Length.ToString() );
+            if ( byteStream != null && byteStream.Length > 0 && GetHeader ("Content-Length") == "" ) {
+                SetHeader( "Content-Length", byteStream.Length.ToString() );
             }
 
             if ( GetHeader( "User-Agent" ) == "" ) {
@@ -298,7 +311,7 @@ namespace HTTP
         }
 
         public string Text {
-            set { bytes = System.Text.Encoding.UTF8.GetBytes (value); }
+            set { byteStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes (value)); }
         }
 
         public static bool ValidateServerCertificate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -328,8 +341,12 @@ namespace HTTP
 
             stream.Write( EOL );
 
-            if ( bytes != null && bytes.Length > 0 ) {
-                stream.Write( bytes );
+            long numBytesToRead = byteStream.Length;
+            byte[] buffer = new byte[bufferSize];
+            while (numBytesToRead > 0){
+                int readed = byteStream.Read(buffer, 0, bufferSize);
+                stream.Write(buffer, 0, readed);
+                numBytesToRead -= readed;
             }
         }
 
