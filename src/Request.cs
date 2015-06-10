@@ -208,11 +208,17 @@ namespace HTTP
                 }
 
             } catch (Exception e) {
+#if !UNITY_EDITOR
                 Console.WriteLine ("Unhandled Exception, aborting request.");
                 Console.WriteLine (e);
+#else
+                Debug.LogError("Unhandled Exception, aborting request.");
+                Debug.LogException(e);
+#endif
                 exception = e;
                 response = null;
             }
+
             state = RequestState.Done;
             isDone = true;
             responseTime = curcall.ElapsedMilliseconds;
@@ -341,6 +347,10 @@ namespace HTTP
 
             stream.Write( EOL );
 
+            if (byteStream == null){
+                return;
+            }
+
             long numBytesToRead = byteStream.Length;
             byte[] buffer = new byte[bufferSize];
             while (numBytesToRead > 0){
@@ -348,6 +358,7 @@ namespace HTTP
                 stream.Write(buffer, 0, readed);
                 numBytesToRead -= readed;
             }
+            byteStream.Close();
         }
 
         private static string[] sizes = { "B", "KB", "MB", "GB" };
