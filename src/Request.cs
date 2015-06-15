@@ -223,6 +223,11 @@ namespace HTTP
             isDone = true;
             responseTime = curcall.ElapsedMilliseconds;
 
+            if ( byteStream != null )
+            {
+                byteStream.Close();
+            }
+
             if ( completedCallback != null )
             {
                 if (synchronous) {
@@ -358,7 +363,6 @@ namespace HTTP
                 stream.Write(buffer, 0, readed);
                 numBytesToRead -= readed;
             }
-            byteStream.Close();
         }
 
         private static string[] sizes = { "B", "KB", "MB", "GB" };
