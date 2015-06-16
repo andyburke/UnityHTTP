@@ -5,8 +5,6 @@ using System.Collections.Generic;
 namespace HTTP {
 
     public class FormPart {
-        string fieldName;
-        string mimeType;
         byte[] header;
         Stream contents;
         int position = 0;
@@ -50,6 +48,11 @@ namespace HTTP {
             writed += bytesToWrite;
             position += bytesToWrite;
             return writed;
+        }
+
+        public void Dispose(){
+            header = null;
+            contents.Close();
         }
     }
     
@@ -150,6 +153,13 @@ namespace HTTP {
                 throw new InvalidOperationException("You can't change form data, form already readed");
             }
             parts.Add(part);
+        }
+        
+        public override void Close(){
+            foreach (var part in parts){
+                part.Dispose();
+            }
+            base.Close();
         }
     }
 
