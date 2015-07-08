@@ -100,7 +100,6 @@ namespace HTTP
                 this.AddHeader( (string)entry.Key, (string)entry.Value );
             }
 #endif
-
         }
 
         public Request( string method, string uri, Hashtable data )

@@ -2,6 +2,13 @@
 
 Based on Simon Wittber's UnityWeb code (http://code.google.com/p/unityweb/).
 
+# LICENSE
+
+UnityHTTP falls under the GPL due to its basis on Simon Wittber's UnityWeb code,
+which is licensed under the GPL.
+
+You should be aware of this license and determine if it is acceptable for your project.
+
 # About
 
 This is a TcpClient-based HTTP library for use in Unity.  It should work in
