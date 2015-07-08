@@ -89,10 +89,17 @@ namespace HTTP
             this.method = method;
             this.uri = new Uri (uri);
             this.byteStream = new MemoryStream(form.data);
-	    foreach ( KeyValuePair<string,string> pair in form.headers )
-           {
-		this.AddHeader(pair.Key,pair.Value);
-           }
+#if UNITY_5
+            foreach ( var entry in form.headers )
+            {
+                this.AddHeader( entry.Key, entry.Value );
+            }
+#else
+            foreach ( DictionaryEntry entry in form.headers )
+            {
+                this.AddHeader( (string)entry.Key, (string)entry.Value );
+            }
+#endif
         }
 
         public Request( string method, string uri, Hashtable data )
