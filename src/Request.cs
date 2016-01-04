@@ -184,7 +184,13 @@ namespace HTTP
                                 var ssl = ostream as SslStream;
                                 ssl.AuthenticateAsClient (uri.Host);
                             } catch (Exception e) {
-                                Debug.LogError ("Exception: " + e.Message);
+#if !UNITY_EDITOR
+                                Console.WriteLine ("SSL authentication failed.");
+                                Console.WriteLine (e);
+#else
+                                Debug.LogError ("SSL authentication failed.");
+                                Debug.LogException(e);
+#endif
                                 return;
                             }
                         }
