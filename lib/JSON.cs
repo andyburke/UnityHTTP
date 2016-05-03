@@ -408,7 +408,11 @@ public class JSON
 		} else if (value == null) {
 			builder.Append ("null");
 		} else if(value.GetType().IsArray) {
-			success = SerializeArray((object[])value, builder);
+			List<object> transferList = new List<object> ();
+			foreach (object valueToCast in (IEnumerable)value) {
+				transferList.Add (valueToCast);
+			}
+			success = SerializeArray(transferList.ToArray(), builder);
 		} else {
 			success = false;
 		}
