@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 
-namespace HTTP
+namespace UnityHTTP
 {
     public class ResponseCallbackDispatcher : MonoBehaviour
     {
@@ -43,7 +43,7 @@ namespace HTTP
         {
             while( requests.Count > 0 )
             {
-                HTTP.Request request = (Request)requests.Dequeue();
+                UnityHTTP.Request request = (Request)requests.Dequeue();
                 request.completedCallback( request );
             }
         }

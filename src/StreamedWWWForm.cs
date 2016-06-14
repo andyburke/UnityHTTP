@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Collections;
 
-namespace HTTP
+namespace UnityHTTP
 {
     public class StreamedWWWForm {
         string boundary;

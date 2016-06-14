@@ -2,9 +2,8 @@ using UnityEngine;
 using System.Collections;
 using System.IO;
 using System;
-using HTTP;
 
-namespace HTTP
+namespace UnityHTTP
 {
     public class DiskCacheOperation
     {
@@ -91,7 +90,7 @@ namespace HTTP
         IEnumerator DownloadAndSave (Request request, string filename, DiskCacheOperation handle)
         {
             var useCachedVersion = File.Exists(filename);
-            Action< HTTP.Request > callback = request.completedCallback;
+            Action< UnityHTTP.Request > callback = request.completedCallback;
             request.Send(); // will clear the completedCallback
             while (!request.isDone)
                 yield return new WaitForEndOfFrame ();
