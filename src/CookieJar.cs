@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 // Based on node-cookiejar (https://github.com/bmeck/node-cookiejar)
 
-namespace HTTP
+namespace UnityHTTP
 {
     public class CookieAccessInfo
     {

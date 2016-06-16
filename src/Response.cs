@@ -6,7 +6,7 @@ using System.Text;
 using System.Globalization;
 using Ionic.Zlib;
 
-namespace HTTP
+namespace UnityHTTP
 {
     public class Response
     {

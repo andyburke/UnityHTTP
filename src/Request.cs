@@ -11,7 +11,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
-namespace HTTP
+namespace UnityHTTP
 {
     public class HTTPException : Exception
     {
@@ -49,7 +49,7 @@ namespace HTTP
         public bool synchronous = false;
         public int bufferSize = 4 * 1024;
 
-        public Action< HTTP.Request > completedCallback = null;
+        public Action< UnityHTTP.Request > completedCallback = null;
 
         Dictionary<string, List<string>> headers = new Dictionary<string, List<string>> ();
         static Dictionary<string, string> etags = new Dictionary<string, string> ();
@@ -271,7 +271,7 @@ namespace HTTP
             }            
         }
         
-        public virtual void Send( Action< HTTP.Request > callback = null)
+        public virtual void Send( Action< UnityHTTP.Request > callback = null)
         {
             
             if (!synchronous && callback != null && ResponseCallbackDispatcher.Singleton == null )

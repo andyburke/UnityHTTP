@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-namespace HTTP {
+namespace UnityHTTP {
 
     public class FormPart {
         byte[] header;
