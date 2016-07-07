@@ -210,7 +210,7 @@ namespace UnityHTTP
                         AddHeader( parts[0], parts[1] );
                     }
                     
-                } else {
+                } else if (request.method.ToUpper() != "HEAD") {
                     // Read Body
                     int contentLength = 0;
 
