@@ -49,4 +49,23 @@ namespace UnityHTTP
             Console.WriteLine(msg);
         }
     }
+	public class DiscardLogger : ILogger
+    {
+        public void Log(string msg)
+        {
+            // discard logs
+        }
+        public void LogError(string msg)
+        {
+            // discard logs
+        }
+        public void LogException(Exception e)
+        {
+            // discard logs
+        }
+        public void LogWarning(string msg)
+        {
+            // discard logs
+        }
+    }
 }
