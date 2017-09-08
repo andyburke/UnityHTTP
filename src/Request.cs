@@ -30,7 +30,14 @@ namespace UnityHTTP
         public static bool LogAllRequests = false;
         public static bool VerboseLogging = false;
         public static string unityVersion = Application.unityVersion;
-        public static string operatingSystem = SystemInfo.operatingSystem; 
+        public static string operatingSystem = SystemInfo.operatingSystem;
+        public static ILogger logger =
+#if !UNITY_EDITOR
+            new ConsoleLogger()
+#else
+            new UnityLogger()
+#endif
+        ;
 
         public CookieJar cookieJar = CookieJar.Instance;
         public string method = "GET";
@@ -184,13 +191,8 @@ namespace UnityHTTP
                                 var ssl = ostream as SslStream;
                                 ssl.AuthenticateAsClient (uri.Host);
                             } catch (Exception e) {
-#if !UNITY_EDITOR
-                                Console.WriteLine ("SSL authentication failed.");
-                                Console.WriteLine (e);
-#else
-                                Debug.LogError ("SSL authentication failed.");
-                                Debug.LogException(e);
-#endif
+                                logger.LogError ("SSL authentication failed.");
+                                logger.LogException(e);
                                 return;
                             }
                         }
@@ -220,13 +222,8 @@ namespace UnityHTTP
                 }
 
             } catch (Exception e) {
-#if !UNITY_EDITOR
-                Console.WriteLine ("Unhandled Exception, aborting request.");
-                Console.WriteLine (e);
-#else
-                Debug.LogError("Unhandled Exception, aborting request.");
-                Debug.LogException(e);
-#endif
+                logger.LogError("Unhandled Exception, aborting request.");
+                logger.LogException(e);
                 exception = e;
                 response = null;
             }
@@ -253,19 +250,19 @@ namespace UnityHTTP
             if ( LogAllRequests )
             {
 #if !UNITY_EDITOR
-                System.Console.WriteLine("NET: " + InfoString( VerboseLogging ));
+                logger.Log("NET: " + InfoString( VerboseLogging ));
 #else
                 if ( response != null && response.status >= 200 && response.status < 300 )
                 {
-                    Debug.Log( InfoString( VerboseLogging ) );
+                    logger.Log( InfoString( VerboseLogging ) );
                 }
                 else if ( response != null && response.status >= 400 )
                 {
-                    Debug.LogError( InfoString( VerboseLogging ) );
+                    logger.LogError( InfoString( VerboseLogging ) );
                 }
                 else
                 {
-                    Debug.LogWarning( InfoString( VerboseLogging ) );
+                    logger.LogWarning( InfoString( VerboseLogging ) );
                 }
 #endif
             }            
@@ -340,9 +337,9 @@ namespace UnityHTTP
         public static bool ValidateServerCertificate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
 #if !UNITY_EDITOR
-            System.Console.WriteLine( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
+            logger.LogWarning( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
 #else
-            Debug.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
+            logger.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
 #endif
             return true;
         }
