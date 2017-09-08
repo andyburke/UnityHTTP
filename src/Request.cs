@@ -31,7 +31,7 @@ namespace UnityHTTP
         public static bool VerboseLogging = false;
         public static string unityVersion = Application.unityVersion;
         public static string operatingSystem = SystemInfo.operatingSystem;
-        public static ILogger logger =
+        public static ILogger Logger =
 #if !UNITY_EDITOR
             new ConsoleLogger()
 #else
@@ -56,7 +56,7 @@ namespace UnityHTTP
         public bool synchronous = false;
         public int bufferSize = 4 * 1024;
         
-        public ILogger logger = Request.logger;
+        public ILogger logger = Request.Logger;
 
         public Action< UnityHTTP.Request > completedCallback = null;
 
@@ -339,9 +339,9 @@ namespace UnityHTTP
         public static bool ValidateServerCertificate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
 #if !UNITY_EDITOR
-            logger.LogWarning( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
+            Logger.LogWarning( "NET: SSL Cert: " + sslPolicyErrors.ToString() );
 #else
-            logger.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
+            Logger.LogWarning("SSL Cert Error: " + sslPolicyErrors.ToString ());
 #endif
             return true;
         }

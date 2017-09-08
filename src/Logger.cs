@@ -22,7 +22,7 @@ namespace UnityHTTP
         }
         public void LogException(Exception e)
         {
-            UnityEngine.Debug.LogException(msg);
+            UnityEngine.Debug.LogException(e);
         }
         public void LogWarning(string msg)
         {
@@ -42,7 +42,7 @@ namespace UnityHTTP
         }
         public void LogException(Exception e)
         {
-            Console.WriteLine(msg);
+            Console.WriteLine(e);
         }
         public void LogWarning(string msg)
         {
