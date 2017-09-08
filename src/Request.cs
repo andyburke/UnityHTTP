@@ -55,6 +55,8 @@ namespace UnityHTTP
         public long responseTime = 0; // in milliseconds
         public bool synchronous = false;
         public int bufferSize = 4 * 1024;
+        
+        public ILogger logger = Request.logger;
 
         public Action< UnityHTTP.Request > completedCallback = null;
 
